@@ -14,8 +14,13 @@
         {
             "matches": ["<all_urls>"],
             "js": [
+                "js/util/constants.js",
                 "js/content.js"
             ]
         }
-    ]
+    ],
+    "background": {
+        "scripts": ["js/background.js", "js/util/constants.js"],
+        "persistent": false
+    }
 }
