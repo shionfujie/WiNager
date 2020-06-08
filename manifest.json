@@ -1,26 +1,28 @@
 {
-    "name": "WiNager",
-    "description": "Window transition manager for Chrome",
-    "version": "0.0.1",
-    "manifest_version": 2,
-    "icons": {
-        "16": "images/get_started16.png",
-        "32": "images/get_started32.png",
-        "48": "images/get_started48.png",
-        "128": "images/get_started128.png"
-    },
-    "permissions": ["tabs"],
-    "content_scripts": [
-        {
-            "matches": ["<all_urls>"],
-            "js": [
-                "js/util/constants.js",
-                "js/content.js"
-            ]
-        }
-    ],
-    "background": {
-        "scripts": ["js/background.js", "js/util/constants.js"],
-        "persistent": false
+  "name": "WiNager",
+  "description": "Window transition manager for Chrome",
+  "version": "0.0.1",
+  "manifest_version": 2,
+  "icons": {
+    "16": "images/get_started16.png",
+    "32": "images/get_started32.png",
+    "48": "images/get_started48.png",
+    "128": "images/get_started128.png"
+  },
+  "permissions": ["tabs"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["js/util/constants.js", "js/content.js"]
     }
+  ],
+  "background": {
+    "scripts": [
+      "js/background.js",
+      "js/util/constants.js",
+      "js/tabs/removeTabByIndex.js",
+      "js/tabs/detachTabs.js"
+    ],
+    "persistent": false
+  }
 }
