@@ -13,7 +13,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["js/util/constants.js", "js/content.js"]
+      "js": ["js/util/constants.js", "js/util/actions.js", "js/content.js"]
     }
   ],
   "background": {
