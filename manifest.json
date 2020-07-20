@@ -21,7 +21,8 @@
       "js/background.js",
       "js/util/constants.js",
       "js/tabs/removeTabByIndex.js",
-      "js/tabs/detachTabs.js"
+      "js/tabs/detachTabs.js",
+      "js/tabs/moveTabs.js"
     ],
     "persistent": false
   }
