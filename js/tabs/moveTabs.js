@@ -19,6 +19,7 @@ function moveTabs(offset) {
 }
 
 function moveTabsIncrementally(idsAndIndices) {
+  if (idsAndIndices.length == 0) return
   const [[id, index], ...rest] = idsAndIndices;
   chrome.tabs.move(id, { index }, () => {
     moveTabsIncrementally(rest);
