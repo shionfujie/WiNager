@@ -1,7 +1,7 @@
 {
   "name": "WiNager",
   "description": "Window transition manager for Chrome",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "manifest_version": 2,
   "icons": {
     "16": "images/get_started16.png",
@@ -21,7 +21,8 @@
       "js/background.js",
       "js/util/constants.js",
       "js/tabs/removeTabByIndex.js",
-      "js/tabs/detachTabs.js"
+      "js/tabs/detachTabs.js",
+      "js/tabs/moveTabs.js"
     ],
     "persistent": false
   }
