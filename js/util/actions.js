@@ -10,3 +10,9 @@ function moveTab(offset) {
         offset
     }
 }
+
+function duplicate() {
+    return {
+        type: MESSAGE_DUPLICATE
+    }
+}
