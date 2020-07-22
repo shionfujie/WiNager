@@ -8,4 +8,6 @@ document.onkeydown = ({code, shiftKey, ctrlKey, altKey, metaKey}) => {
         port.postMessage(moveTab(code == "ArrowRight" ? 1 : - 1))
     } else if (code == "KeyD" && altKey)
         port.postMessage(duplicate())
+    else if (code.startsWith("Digit") && shiftKey && metaKey)
+        port.postMessage(navigateUnpinned(parseInt(code[5]) - 1))
 }
