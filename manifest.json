@@ -22,7 +22,8 @@
       "js/util/constants.js",
       "js/tabs/removeTabByIndex.js",
       "js/tabs/detachTabs.js",
-      "js/tabs/moveTabs.js"
+      "js/tabs/moveTabs.js",
+      "js/tabs/navigateToUnpinnedTab.js"
     ],
     "persistent": false
   }
