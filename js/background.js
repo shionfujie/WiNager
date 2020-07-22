@@ -4,6 +4,7 @@ chrome.runtime.onConnect.addListener(({ name, onMessage }) => {
       if (message.type == MESSAGE_DETACH) detachTabs();
       else if (message.type == MESSAGE_MOVE) moveTabs(message.offset)
       else if (message.type == MESSAGE_DUPLICATE) duplicateCurrentTab()
+      else if (message.type == MESSAGE_NAVIGATE_UNPINNED)  navigateToUnpinnedTab(message.offset)
     });
 });
 

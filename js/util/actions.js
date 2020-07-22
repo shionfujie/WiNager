@@ -16,3 +16,10 @@ function duplicate() {
         type: MESSAGE_DUPLICATE
     }
 }
+
+function navigateUnpinned(offset) {
+    return {
+        type: MESSAGE_NAVIGATE_UNPINNED,
+        offset
+    }
+}
