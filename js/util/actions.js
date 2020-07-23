@@ -23,3 +23,9 @@ function navigateUnpinned(offset) {
         offset
     }
 }
+
+function stash() {
+    return {
+        type: MESSAGE_STASH
+    }
+}
