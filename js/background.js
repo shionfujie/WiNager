@@ -19,10 +19,17 @@ function duplicateCurrentTab() {
 function stashTabs() {
   chrome.tabs.query({highlighted: true, currentWindow: true}, tabs => {
     const entries = tabs.map(({title, url}) => ({ title, url}))
-    chrome.storage.sync.set({[new Date().toISOString()]: entries}, () => {
-      chrome.storage.sync.get(null, items => {
-        console.log(items)
-        chrome.storage.sync.clear()
+    const timestamp = new Date().toISOString()
+    chrome.storage.sync.get({last: {}}, ({last}) => {
+      const next = last.timestamp
+      const payload = {
+        last: { timestamp, entries, next },
+        [timestamp]: { entries, next }
+      }
+      chrome.storage.sync.set(payload, () => {
+        chrome.storage.sync.get(null, items => {
+          console.log(items)
+        })
       })
     })
   })
