@@ -1,7 +1,6 @@
 const port = chrome.runtime.connect({name: PORT_NAME_DEFAULT})
 
 document.onkeydown = ({code, shiftKey, ctrlKey, altKey, metaKey}) => {
-    console.log(code)
     if (port === null) return
     if (code == "ArrowDown" && shiftKey && ctrlKey) {
         port.postMessage(detachTab())
@@ -11,4 +10,7 @@ document.onkeydown = ({code, shiftKey, ctrlKey, altKey, metaKey}) => {
         port.postMessage(duplicate())
     else if (code.startsWith("Digit") && ctrlKey && altKey && metaKey)
         port.postMessage(navigateUnpinned(parseInt(code[5]) - 1))
+    else if (code == "KeyS" && ctrlKey && altKey && metaKey) {
+        port.postMessage(stash())
+    }
 }
