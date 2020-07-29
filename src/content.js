@@ -6,7 +6,7 @@ import { PORT_NAME_DEFAULT } from "./util/constants";
 import usePort from "./hooks/chrome/usePort";
 import useDocumentKeydown from "./hooks/useDocumentKeydown";
 
-function Main () {
+function Content () {
     const port = usePort(PORT_NAME_DEFAULT)
     useDocumentKeydown(({code, shiftKey, ctrlKey, altKey, metaKey}) => {
         if (port === null) return
@@ -31,4 +31,4 @@ function Main () {
 const app = document.createElement('div');
 app.id = "my-extension-root";
 document.body.appendChild(app);
-ReactDOM.render(<Main />, app);
+ReactDOM.render(<Content />, app);
