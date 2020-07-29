@@ -1,6 +1,0 @@
-const PORT_NAME_DEFAULT = "WiNager default"
-const MESSAGE_DETACH = "detach"
-const MESSAGE_MOVE = "move"
-const MESSAGE_DUPLICATE = "duplicate"
-const MESSAGE_NAVIGATE_UNPINNED = "navigate unpinned"
-const MESSAGE_STASH = "stash"
