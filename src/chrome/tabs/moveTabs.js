@@ -1,4 +1,6 @@
-function moveTabs(offset) {
+/*global chrome*/
+
+export default function moveTabs(offset) {
   chrome.tabs.query({ currentWindow: true }, tabs => {
     const countOfTabs = tabs.length;
     const countOfPinned = tabs.filter(tab => tab.pinned).length;
@@ -13,7 +15,7 @@ function moveTabs(offset) {
       }
     };
     const idsAndIndices = highlightedTabs.map(({ id, index, pinned }) => 
-        [id,newIndex(index, pinned)]);
+        [id, newIndex(index, pinned)]);
     moveTabsIncrementally(offset > 0 ? idsAndIndices.reverse() : idsAndIndices);
   });
 }
