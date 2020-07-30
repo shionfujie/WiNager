@@ -105,7 +105,13 @@ function StashEntry() {
 }
 
 function RestoreButton() {
-  return <div></div>;
+  return (
+    <div class="inline-block padding-top-larger padding-bottom-medium">
+      <div class="pointer underline font-size-medium font-weight-bold line-height-medium winager-primary">
+        Restore all 3 items
+      </div>
+    </div>
+  );
 }
 
 const app = document.createElement("div");
