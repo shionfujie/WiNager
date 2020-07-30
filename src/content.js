@@ -41,7 +41,7 @@ function StashListModal() {
 
 function StashList() {
   return (
-    <div >
+    <div className={'flexbox flexbox-direction-column padding-horizontal-larger'}>
       <StashDate />
       <StashEntries />
       <StashEntries />
