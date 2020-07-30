@@ -92,7 +92,16 @@ function StashCaption() {
 }
 
 function StashEntry() {
-  return <div></div>;
+  return (
+    <div class="shade-087 font-size-medium font-weight-medium padding-vertical-smaller line-height-medium">
+      <div
+        class="pointer overflow-hidden white-space-nowrap text-ellipsis"
+        title="Git - git-stash Documentation - https://git-scm.com/docs/git-stash"
+      >
+        Git - git-stash Documentation
+      </div>
+    </div>
+  );
 }
 
 function RestoreButton() {
