@@ -79,7 +79,16 @@ function StashEntries() {
 }
 
 function StashCaption() {
-  return <div></div>;
+  return (
+    <div className={"padding-vertical-medium"}>
+      <div class="shade-087 font-size-larger font-weight-bold line-height-medium">
+        10:00 PM
+      </div>
+      <div class="shade-056 font-size-small font-weight-medium line-height-medium">
+        3 items
+      </div>
+    </div>
+  );
 }
 
 function StashEntry() {
