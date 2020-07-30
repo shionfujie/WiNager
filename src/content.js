@@ -32,16 +32,18 @@ function Content() {
       port.postMessage(stash());
     }
   });
-  return <StashListModal/>;
+  return <StashListModal />;
 }
 
 function StashListModal() {
-    return <StashList/>
+  return <StashList />;
 }
 
 function StashList() {
   return (
-    <div className={'flexbox flexbox-direction-column padding-horizontal-larger'}>
+    <div
+      className={"flexbox flexbox-direction-column padding-horizontal-larger"}
+    >
       <StashDate />
       <StashEntries />
       <StashEntries />
@@ -52,7 +54,17 @@ function StashList() {
 }
 
 function StashDate() {
-  return <div></div>;
+  return (
+    <div className={"flexbox flexbox-justify-center"}>
+      <div
+        className={
+          "shade-087 font-size-huge font-weight-bold line-height-huge padding-top-extra-larger"
+        }
+      >
+        Today - Friday, July 24
+      </div>
+    </div>
+  );
 }
 
 function StashEntries() {
