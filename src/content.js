@@ -69,7 +69,7 @@ function StashDate() {
 
 function StashEntries() {
   return (
-    <div>
+    <div className={"padding-top-smaller padding-bottom-medium"}>
       <StashCaption />
       <StashEntry />
       <StashEntry />
