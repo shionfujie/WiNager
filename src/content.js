@@ -36,10 +36,10 @@ function Content() {
     else if (code == "KeyP" && ctrlKey && altKey && metaKey)
       openStashModal()
   });
-  return <StashListModal isOpen={stashModalIsOpen} />;
+  return <StashModal isOpen={stashModalIsOpen} />;
 }
 
-function StashListModal({isOpen, onRequestClose}) {
+function StashModal({isOpen, onRequestClose}) {
   const style = {
     overlay: {
       backgroundColor: "rgba(255, 255, 255, .0)",
