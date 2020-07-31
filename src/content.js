@@ -45,11 +45,11 @@ function Content() {
 function StashModal({isOpen, onRequestClose, chromePort}) {
   const [data, setData] = useState(null)
   useEffect(() => {
-    chrome.storage.sync.get(null, ({last, ...items}) => {
+    chrome.storage.sync.get(null, items => {
       console.log(items)
       setData(
         Object.entries(items)
-          .map(([timestamp, {entries}]) => {
+          .map(([timestamp, entries]) => {
             const date = new Date(timestamp)
             return {
               stashKey: timestamp, 

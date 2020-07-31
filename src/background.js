@@ -34,9 +34,7 @@ function duplicateCurrentTab() {
 
 function popTabs(stashKey) {
   chrome.storage.sync.get({[stashKey]: {}, last: {}}, items => {
-    const {entries} = items[stashKey]
-    console.log(entries)
-    restoreTabs(entries, () => {
+    restoreTabs(items[stashKey], () => {
       chrome.storage.sync.remove(stashKey)
     })
   })
