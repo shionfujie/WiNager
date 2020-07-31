@@ -11,10 +11,12 @@ import {
 } from "./util/actions";
 import { PORT_NAME_DEFAULT } from "./util/constants";
 import usePort from "./hooks/chrome/usePort";
+import useSwitch from "./hooks/useSwitch";
 import useDocumentKeydown from "./hooks/useDocumentKeydown";
 
 function Content() {
   const port = usePort(PORT_NAME_DEFAULT);
+  const [stashModalIsOpen, openStashModal, closeStashModal] = useSwitch();
   useDocumentKeydown(({ code, shiftKey, ctrlKey, altKey, metaKey }) => {
     if (port === null) return;
     if (code == "ArrowDown" && shiftKey && ctrlKey) {
@@ -29,11 +31,12 @@ function Content() {
     } else if (code == "KeyD" && altKey) port.postMessage(duplicate());
     else if (code.startsWith("Digit") && ctrlKey && altKey && metaKey)
       port.postMessage(navigateUnpinned(parseInt(code[5]) - 1));
-    else if (code == "KeyS" && ctrlKey && altKey && metaKey) {
+    else if (code == "KeyS" && ctrlKey && altKey && metaKey) 
       port.postMessage(stash());
-    }
+    else if (code == "KeyP" && ctrlKey && altKey && metaKey)
+      openStashModal()
   });
-  return <StashListModal isOpen={true}/>;
+  return <StashListModal isOpen={stashModalIsOpen} />;
 }
 
 function StashListModal({isOpen, onRequestClose}) {
