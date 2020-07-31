@@ -37,8 +37,25 @@ function Content() {
 }
 
 function StashListModal({isOpen, onRequestClose}) {
+  const style = {
+    overlay: {
+      backgroundColor: "rgba(255, 255, 255, .0)",
+      zIndex: 100000
+    },
+    content: {
+      top: 8,
+      right: 8,
+      left: null,
+      bottom: null,
+      width: 480,
+      height: "75%",
+      border: 0,
+      borderRadius: 2,
+      boxShadow: "0 8px 10px 1px rgba(0,0,0,0.14), 0 3px 14px 2px rgba(0,0,0,0.12), 0 5px 5px -3px rgba(0,0,0,0.2)"
+    }
+  }
   return (
-    <ReactModal isOpen={isOpen} onRequestClose={onRequestClose}>
+    <ReactModal isOpen={isOpen} onRequestClose={onRequestClose} style={style}>
       <StashList />
     </ReactModal>
   );
