@@ -170,16 +170,23 @@ function StashList() {
             day={date.day}
           />
           {entries.map(({time, entries}) => 
-            <StashEntries
-              hours={time.hours}
-              minutes={time.minutes}
-              entries={entries}
-            />
+            <>
+              <StashEntries
+                hours={time.hours}
+                minutes={time.minutes}
+                entries={entries}
+              />
+              <Separator/>
+            </>
           )}
         </>
       )}
     </div>
   );
+}
+
+function Separator() {
+  return <div class="border-shade-87 border-top-normal"></div>
 }
 
 const daysOfWeek = [
