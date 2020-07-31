@@ -3,8 +3,10 @@ import {
   MESSAGE_MOVE,
   MESSAGE_DUPLICATE,
   MESSAGE_NAVIGATE_UNPINNED,
-  MESSAGE_STASH
+  MESSAGE_STASH,
+  MESSAGE_STASH_POP
 } from "./constants";
+import { func } from "prop-types";
 
 export function detachTab() {
   return {
@@ -36,4 +38,11 @@ export function stash() {
   return {
     type: MESSAGE_STASH
   };
+}
+
+export function popStashEntry(stashKey) {
+  return {
+    type: MESSAGE_STASH_POP,
+    stashKey
+  }
 }
