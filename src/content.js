@@ -7,7 +7,8 @@ import {
   moveTab,
   duplicate,
   navigateUnpinned,
-  stash
+  stash,
+  popStashEntry
 } from "./util/actions";
 import { PORT_NAME_DEFAULT } from "./util/constants";
 import usePort from "./hooks/chrome/usePort";
@@ -36,10 +37,10 @@ function Content() {
     else if (code == "KeyP" && ctrlKey && altKey && metaKey)
       openStashModal()
   });
-  return <StashModal isOpen={stashModalIsOpen} onRequestClose={closeStashModal}/>;
+  return <StashModal isOpen={stashModalIsOpen} onRequestClose={closeStashModal} chromePort={port}/>;
 }
 
-function StashModal({isOpen, onRequestClose}) {
+function StashModal({isOpen, onRequestClose, chromePort}) {
   const style = {
     overlay: {
       backgroundColor: "rgba(255, 255, 255, .0)",
@@ -59,12 +60,12 @@ function StashModal({isOpen, onRequestClose}) {
   }
   return (
     <ReactModal isOpen={isOpen} onRequestClose={onRequestClose} style={style}>
-      <StashList />
+      <StashList chromePort={chromePort} />
     </ReactModal>
   );
 }
 
-function StashList() {
+function StashList({chromePort}) {
   const data = [
     {
       date: {
@@ -197,9 +198,11 @@ function StashList() {
           {entries.map(({time, entries}) => 
             <>
               <StashEntries
+                stashKey={'testStashKey'}
                 hours={time.hours}
                 minutes={time.minutes}
                 entries={entries}
+                chromePort={chromePort}
               />
               <Separator/>
             </>
@@ -273,7 +276,7 @@ function StashDate({fullYear, month, date, day}) {
   );
 }
 
-function StashEntries({hours, minutes, entries}) {
+function StashEntries({stashKey, hours, minutes, entries, chromePort}) {
   const count = entries.length;
   return (
     <div className={"padding-top-smaller padding-bottom-medium"}>
@@ -281,7 +284,10 @@ function StashEntries({hours, minutes, entries}) {
       {entries.map(({ title, url }) => {
         return <StashEntry title={title} url={url} />;
       })}
-      <RestoreButton count={count} />
+      <RestoreButton onClick={() => {
+        if (chromePort != null)
+          chromePort.postMessage(popStashEntry(stashKey))
+      }} count={count} />
     </div>
   );
 }
@@ -320,10 +326,12 @@ function StashEntry({title, url}) {
   );
 }
 
-function RestoreButton({count}) {
+function RestoreButton({count, onClick}) {
   return (
     <div class="inline-block padding-top-larger padding-bottom-medium">
-      <div class="pointer underline font-size-medium font-weight-bold line-height-medium winager-primary">
+      <div 
+        onClick={onClick}
+        class="pointer underline font-size-medium font-weight-bold line-height-medium winager-primary">
         Restore all {count} items
       </div>
     </div>
