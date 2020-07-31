@@ -40,51 +40,144 @@ function StashListModal() {
 }
 
 function StashList() {
-  const data = {
-    date: {
-      fullYear: 2020,
-      month: 6,
-      date: 30,
-      day: 3,
-      hours: 10,
-      minutes: 0
+  const data = [
+    {
+      date: {
+        fullYear: 2020,
+        month: 6,
+        date: 31,
+        day: 4,
+        hours: 22,
+        minutes: 0
+      },
+      entries: [
+        {
+          title: "Git - git-stash Documentation",
+          url: "https://git-scm.com/docs/git-stash"
+        },
+        {
+          title: "現地の人から借りる家、体験&スポット - Airbnb",
+          url: "https://www.airbnb.jp/"
+        },
+        {
+          title:
+            "Basic classification: Classify images of clothing  |  TensorFlow Core",
+          url:
+            "https://www.tensorflow.org/tutorials/keras/classification?hl=en#import_the_fashion_mnist_dataset"
+        }
+      ]
     },
-    entries: [
-      {
-        title: "Git - git-stash Documentation",
-        url: "https://git-scm.com/docs/git-stash"
+    {
+      date: {
+        fullYear: 2020,
+        month: 6,
+        date: 31,
+        day: 4,
+        hours: 21,
+        minutes: 55
       },
-      {
-        title: "現地の人から借りる家、体験&スポット - Airbnb",
-        url: "https://www.airbnb.jp/"
+      entries: [
+        {
+          title: "e (mathematical constant) - Wikipedia",
+          url: "https://en.wikipedia.org/wiki/E_(mathematical_constant)#Alternative_characterizations"
+        },
+        {
+          title:
+            "データで学ぶ - 各国比較",
+          url:
+            "https://www.covid19-yamanaka.com/cont3/17.html"
+        },
+        {
+          title:
+            "(2) YouTube",
+          url:
+            "https://www.youtube.com/"
+        },
+        {
+          title:
+            "ShionFujie (Shion T. Fujie)",
+          url:
+            "https://github.com/ShionFujie"
+        },
+        {
+          title:
+            "国立公園のワーケーションなどに補助金 雇用維持へ 環境省 | NHKニュース",
+          url:
+            "https://www3.nhk.or.jp/news/html/20200724/k10012530791000.html"
+        }
+      ]
+    },
+    {
+      date: {
+        fullYear: 2020,
+        month: 6,
+        date: 30,
+        day: 3,
+        hours: 10,
+        minutes: 15
       },
-      {
-        title:
-          "Basic classification: Classify images of clothing  |  TensorFlow Core",
-        url:
-          "https://www.tensorflow.org/tutorials/keras/classification?hl=en#import_the_fashion_mnist_dataset"
-      }
-    ]
-  };
+      entries: [
+        {
+          title: "オリンピアン・パラリンピアンによるオンライン体験",
+          url: "https://www.airbnb.jp/s/experiences/olympics-online"
+        },
+        {
+          title: "Binomial coefficient - Wikipedia",
+          url: "https://en.wikipedia.org/wiki/Binomial_coefficient#Identities_involving_binomial_coefficients"
+        },
+        {
+          title: "Wolfram|Alpha Examples: Combinatorics",
+          url: "Wolfram|Alpha Examples: Combinatorics - https://www.wolframalpha.com/examples/mathematics/discrete-mathematics/combinatorics/"
+        },
+        {
+          title: "東洋経済オンライン | 経済ニュースの新基準",
+          url: "https://toyokeizai.net/"
+        },
+        {
+          title: "四川省 - Wikipedia",
+          url: "https://ja.wikipedia.org/wiki/%E5%9B%9B%E5%B7%9D%E7%9C%81"
+        },
+        {
+          title: "Google Translate",
+          url: "https://translate.google.com/?hl=en&tab=TT&authuser=0#view=home&op=translate&sl=en&tl=ja"
+        }
+      ]
+    }
+  ]
+  function groupByDate(data) {
+    return data.reduce((acc, {date: {fullYear, month, date, day, ...time}, entries}) => {
+      const last = acc[acc.length - 1]
+      if (last && last.date.fullYear === fullYear && last.date.month === month && last.date.date === date) 
+        last.entries.push({ time, entries })
+      else 
+        acc.push({
+          date: { fullYear, month, date, day },
+          entries: [ { time, entries } ]
+        })
+      return acc
+    }, [])
+  }
   return (
     <div
       className={"flexbox flexbox-direction-column padding-horizontal-larger"}
     >
-      {
+      {groupByDate(data).map(({date, entries}) => 
         <>
           <StashDate
-            fullYear={data.date.fullYear}
-            month={data.date.month}
-            date={data.date.date}
-            day={data.date.day}
+            fullYear={date.fullYear}
+            month={date.month}
+            date={date.date}
+            day={date.day}
           />
-          <StashEntries
-            hours={data.date.hours}
-            minutes={data.date.minutes}
-            entries={data.entries}
-          />
+          {entries.map(({time, entries}) => 
+            <StashEntries
+              hours={time.hours}
+              minutes={time.minutes}
+              entries={entries}
+            />
+          )}
         </>
-      }
+      )}
     </div>
   );
 }
