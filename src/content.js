@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import ReactDOM from "react-dom";
+import ReactModal from "react-modal";
 import "./css/content.css";
 import {
   detachTab,
@@ -32,11 +33,15 @@ function Content() {
       port.postMessage(stash());
     }
   });
-  return <StashListModal />;
+  return <StashListModal isOpen={true}/>;
 }
 
-function StashListModal() {
-  return <StashList />;
+function StashListModal({isOpen, onRequestClose}) {
+  return (
+    <ReactModal isOpen={isOpen} onRequestClose={onRequestClose}>
+      <StashList />
+    </ReactModal>
+  );
 }
 
 function StashList() {
