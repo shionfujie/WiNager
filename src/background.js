@@ -1,6 +1,6 @@
 /*global chrome*/
 
-import { PORT_NAME_DEFAULT } from "./util/constants";
+import { PORT_NAME_DEFAULT, MESSAGE_STASH_POP } from "./util/constants";
 import {
   MESSAGE_DETACH,
   MESSAGE_MOVE,
@@ -22,6 +22,7 @@ chrome.runtime.onConnect.addListener(({ name, onMessage }) => {
       else if (message.type == MESSAGE_NAVIGATE_UNPINNED)
         navigateToUnpinnedTab(message.offset);
       else if (message.type == MESSAGE_STASH) stashTabs();
+      else if (message.type == MESSAGE_STASH_POP) popTabs(message.stashKey);
     });
 });
 
@@ -29,4 +30,23 @@ function duplicateCurrentTab() {
   chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
     chrome.tabs.duplicate(tab.id);
   });
+} 
+
+function popTabs(stashKey) {
+  chrome.storage.sync.get({[stashKey]: {}, last: {}}, items => {
+    restoreTabs(items[stashKey], () => {
+      chrome.storage.sync.remove(stashKey)
+    })
+  })
+}
+
+function restoreTabs(entries, callback) {
+  if (entries.length == 0) 
+    callback()
+  else {
+    const [{url}, ...rest] = entries
+    chrome.tabs.create({url}, () => {
+      restoreTabs(rest, callback)
+    })
+  }
 }
