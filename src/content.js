@@ -36,7 +36,7 @@ function Content() {
     else if (code == "KeyP" && ctrlKey && altKey && metaKey)
       openStashModal()
   });
-  return <StashModal isOpen={stashModalIsOpen} />;
+  return <StashModal isOpen={stashModalIsOpen} onRequestClose={closeStashModal}/>;
 }
 
 function StashModal({isOpen, onRequestClose}) {
