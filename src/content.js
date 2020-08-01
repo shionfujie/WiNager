@@ -113,24 +113,26 @@ function StashList({data, chromePort}) {
     <div
       className={"flexbox flexbox-direction-column padding-horizontal-larger"}
     >
-      {groupByDate(data).map(({stashKey, date, entries}) => 
+      {groupByDate(data).map(({stashKey, date: {fullYear, month, date, day}, entries}) => 
         <>
           <StashDate
-            fullYear={date.fullYear}
-            month={date.month}
-            date={date.date}
-            day={date.day}
+            key={`${fullYear}-${month}-${date}`}
+            fullYear={fullYear}
+            month={month}
+            date={date}
+            day={day}
           />
           {entries.map(({time, entries}) => 
             <>
               <StashEntries
+                key={stashKey}
                 stashKey={stashKey}
                 hours={time.hours}
                 minutes={time.minutes}
                 entries={entries}
                 chromePort={chromePort}
               />
-              <Separator/>
+              <Separator key={`${stashKey}-Separator`}/>
             </>
           )}
         </>
