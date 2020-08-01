@@ -16,6 +16,7 @@ import { PORT_NAME_DEFAULT } from "./util/constants";
 import usePort from "./hooks/chrome/usePort";
 import useSwitch from "./hooks/useSwitch";
 import useDocumentKeydown from "./hooks/useDocumentKeydown";
+import hasSameDate from "./util/dates/hasSameDate";
 
 function Content() {
   const port = usePort(PORT_NAME_DEFAULT);
@@ -40,22 +41,6 @@ function Content() {
       openStashModal()
   });
   return <StashModal isOpen={stashModalIsOpen} onRequestClose={closeStashModal} chromePort={port}/>;
-}
-
-function hasSameDate(date, date1) {
-  function capitalize(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  }
-  function get(obj, attr) {
-    const getFun = obj[`get${capitalize(attr)}`];
-    if (typeof getFun === "function") return getFun.call(obj);
-    else return obj[attr];
-  }
-  return (
-    get(date, "fullYear") === get(date1, "fullYear") &&
-    get(date, "month") === get(date1, "month") &&
-    get(date, "date") === get(date1, "date")
-  );
 }
 
 function StashModal({isOpen, onRequestClose, chromePort}) {
