@@ -16,6 +16,7 @@ import { PORT_NAME_DEFAULT } from "./util/constants";
 import usePort from "./hooks/chrome/usePort";
 import useSwitch from "./hooks/useSwitch";
 import useDocumentKeydown from "./hooks/useDocumentKeydown";
+import hasSameDate from "./util/dates/hasSameDate";
 
 function Content() {
   const port = usePort(PORT_NAME_DEFAULT);
@@ -43,12 +44,27 @@ function Content() {
 }
 
 function StashModal({isOpen, onRequestClose, chromePort}) {
+  function groupByDate(data) {
+    return data.reduce((acc, {stashKey, date: {fullYear, month, date, day, ...time}, entries}) => {
+      const last = acc[acc.length - 1]
+      if (last && last.date.fullYear === fullYear && last.date.month === month && last.date.date === date) 
+        last.entries.push({ stashKey, time, entries })
+      else 
+        acc.push({
+          date: { fullYear, month, date, day },
+          entries: [ { stashKey, time, entries } ]
+        })
+      return acc
+    }, [])
+  }
+  console.debug('rendering StashModal')
   const [data, setData] = useState(null)
   useEffect(() => {
     chrome.storage.sync.get(null, items => {
       console.log(items)
       setData(
-        Object.entries(items)
+        groupByDate(
+          Object.entries(items)
           .sort(([timestamp], [timestamp1]) => -timestamp.localeCompare(timestamp1))
           .map(([timestamp, entries]) => {
             const date = new Date(timestamp)
@@ -65,9 +81,57 @@ function StashModal({isOpen, onRequestClose, chromePort}) {
               entries
             }
           })
+        )
       )
     });
   }, [])
+  console.debug(`data: ${data}`)
+  useEffect(() => {
+    if (data === null) return
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+      for (const stashKey in changes) {
+        const change = changes[stashKey]
+        const date = new Date(stashKey)
+        console.debug("[STORAGE CHANGES] '%s' in '%s': old '%s' new '%s'", stashKey, namespace, change.oldValue, change.newValue)
+        if (change.oldValue === undefined) {
+          // Added a new stash entry
+          const lastEntry = data[0]
+          const entry = {
+            stashKey,
+            time: { hours: date.getHours(), minutes: date.getMinutes() },
+            entries: change.newValue
+          }
+          if (hasSameDate(lastEntry.date, date)) {
+            lastEntry.entries.unshift(entry)
+          } else {
+            data.unshift({
+              date: {
+                fullYear: date.getFullYear(),
+                month: date.getMonth(),
+                date: date.getDate(),
+                day: date.getDay()
+              },
+              entries: [entry]
+            });
+          }
+        } else if (change.newValue === undefined) {
+          // Removed some existing entry
+          const index  = data.findIndex(entry => hasSameDate(date, entry.date))
+          if (index < 0) return
+          const {entries} = data[index]
+          const index1 = entries.findIndex(entry => stashKey === entry.stashKey)
+          if (index1 < 0) return
+          entries.splice(index1, 1)
+          if (entries.length === 0)
+            data.splice(index, 1)
+        } else {
+          // Updated some existing entry
+          console.error('Unknown behaviour: update operation should not be supported')
+        }
+        setData([...data])
+      }
+    })
+  }, [data == null])
   const style = {
     overlay: {
       backgroundColor: "rgba(255, 255, 255, .0)",
@@ -95,42 +159,30 @@ function StashModal({isOpen, onRequestClose, chromePort}) {
 }
 
 function StashList({data, chromePort}) {
-  function groupByDate(data) {
-    return data.reduce((acc, {stashKey, date: {fullYear, month, date, day, ...time}, entries}) => {
-      const last = acc[acc.length - 1]
-      if (last && last.date.fullYear === fullYear && last.date.month === month && last.date.date === date) 
-        last.entries.push({ time, entries })
-      else 
-        acc.push({
-          stashKey,
-          date: { fullYear, month, date, day },
-          entries: [ { time, entries } ]
-        })
-      return acc
-    }, [])
-  }
   return (
     <div
       className={"flexbox flexbox-direction-column padding-horizontal-larger"}
     >
-      {groupByDate(data).map(({stashKey, date, entries}) => 
+      {data.map(({date: {fullYear, month, date, day}, entries}) => 
         <>
           <StashDate
-            fullYear={date.fullYear}
-            month={date.month}
-            date={date.date}
-            day={date.day}
+            key={`${fullYear}-${month}-${date}`}
+            fullYear={fullYear}
+            month={month}
+            date={date}
+            day={day}
           />
-          {entries.map(({time, entries}) => 
+          {entries.map(({stashKey, time, entries}) =>
             <>
               <StashEntries
+                key={stashKey}
                 stashKey={stashKey}
                 hours={time.hours}
                 minutes={time.minutes}
                 entries={entries}
                 chromePort={chromePort}
               />
-              <Separator/>
+              <Separator key={`${stashKey}-Separator`} />
             </>
           )}
         </>
@@ -171,22 +223,14 @@ const months = [
 function StashDate({fullYear, month, date, day}) {
   function displayDate(fullYear, month, date, day) {
     const today = new Date();
-    const thisYear = today.getFullYear();
+    const thatDate = {fullYear, month, date}
     const commonPart = `${daysOfWeek[day]}, ${months[month]} ${date}`;
-    if (
-      fullYear == thisYear &&
-      month == today.getMonth() &&
-      date == today.getDate()
-    )
+    if (hasSameDate(thatDate, today))
       return `Today - ${commonPart}`;
     today.setDate(today.getDate() - 1);
-    if (
-      fullYear == today.getFullYear() &&
-      month == today.getMonth() &&
-      date == today.getDate()
-    )
+    if (hasSameDate(thatDate, today))
       return `Yesterday - ${commonPart}`;
-    if (fullYear == thisYear) return `${commonPart}`;
+    if (fullYear == today.getFullYear()) return `${commonPart}`;
     else return `${commonPart}, ${fullYear}`;
   }
   return (
@@ -207,8 +251,9 @@ function StashEntries({stashKey, hours, minutes, entries, chromePort}) {
   return (
     <div className={"padding-top-smaller padding-bottom-medium"}>
       <StashCaption hours={hours} minutes={minutes} count={count} />
-      {entries.map(({ title, url }) => {
-        return <StashEntry title={title} url={url} />;
+      {entries.map(({ title, url }, idx) => {
+        console.debug("[%s] %s", `${stashKey}-${idx}`, title)
+        return <StashEntry key={`${stashKey}-${idx}`} title={title} url={url} />;
       })}
       <RestoreButton onClick={() => {
         if (chromePort != null)
