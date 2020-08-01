@@ -10,6 +10,7 @@ import {
 } from "./util/constants";
 import detachTabs from "./chrome/tabs/detachTabs";
 import moveTabs from "./chrome/tabs/moveTabs";
+import duplicateCurrentTab from "./chrome/tabs/duplicateCurrentTab"
 import navigateToUnpinnedTab from "./chrome/tabs/navigateToUnpinnedTab";
 import stashTabs from "./chrome/tabs/stashTabs";
 import restoreTabs from "./chrome/tabs/restoreTabs";
@@ -26,12 +27,6 @@ chrome.runtime.onConnect.addListener(({ name, onMessage }) => {
       else if (message.type == MESSAGE_STASH_POP) popTabs(message.stashKey);
     });
 });
-
-function duplicateCurrentTab() {
-  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-    chrome.tabs.duplicate(tab.id);
-  });
-} 
 
 function popTabs(stashKey) {
   chrome.storage.sync.get({[stashKey]: {}}, items => {
