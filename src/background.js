@@ -10,8 +10,9 @@ import {
 } from "./util/constants";
 import detachTabs from "./chrome/tabs/detachTabs";
 import moveTabs from "./chrome/tabs/moveTabs";
+import duplicateCurrentTab from "./chrome/tabs/duplicateCurrentTab"
 import navigateToUnpinnedTab from "./chrome/tabs/navigateToUnpinnedTab";
-import stashTabs from "./chrome/tabs/stashTabs";
+import restoreTabs from "./chrome/tabs/restoreTabs";
 
 chrome.runtime.onConnect.addListener(({ name, onMessage }) => {
   if (name == PORT_NAME_DEFAULT)
@@ -26,27 +27,22 @@ chrome.runtime.onConnect.addListener(({ name, onMessage }) => {
     });
 });
 
-function duplicateCurrentTab() {
-  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-    chrome.tabs.duplicate(tab.id);
-  });
-} 
-
 function popTabs(stashKey) {
-  chrome.storage.sync.get({[stashKey]: {}, last: {}}, items => {
-    restoreTabs(items[stashKey], () => {
+  chrome.storage.sync.get({[stashKey]: {}}, items => {
+    restoreTabs(items[stashKey].map(({url}) => url), () => {
       chrome.storage.sync.remove(stashKey)
     })
   })
 }
 
-function restoreTabs(entries, callback) {
-  if (entries.length == 0) 
-    callback()
-  else {
-    const [{url}, ...rest] = entries
-    chrome.tabs.create({url}, () => {
-      restoreTabs(rest, callback)
-    })
-  }
+function stashTabs() {
+  chrome.tabs.query({ highlighted: true, currentWindow: true }, tabs => {
+    const entries = tabs.map(({ title, url }) => ({ title, url }));
+    const timestamp = new Date().toISOString();
+    chrome.storage.sync.set({ [timestamp]: entries }, () => {
+      chrome.storage.sync.get(null, items => {
+        console.log(items);
+      });
+    });
+  });
 }
