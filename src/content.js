@@ -42,6 +42,22 @@ function Content() {
   return <StashModal isOpen={stashModalIsOpen} onRequestClose={closeStashModal} chromePort={port}/>;
 }
 
+function hasSameDate(date, date1) {
+  function capitalize(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+  function get(obj, attr) {
+    const getFun = obj[`get${capitalize(attr)}`];
+    if (typeof getFun === "function") return getFun.call(obj);
+    else return obj[attr];
+  }
+  return (
+    get(date, "fullYear") === get(date1, "fullYear") &&
+    get(date, "month") === get(date1, "month") &&
+    get(date, "date") === get(date1, "date")
+  );
+}
+
 function StashModal({isOpen, onRequestClose, chromePort}) {
   function groupByDate(data) {
     return data.reduce((acc, {stashKey, date: {fullYear, month, date, day, ...time}, entries}) => {
@@ -56,6 +72,7 @@ function StashModal({isOpen, onRequestClose, chromePort}) {
       return acc
     }, [])
   }
+  console.debug('rendering StashModal')
   const [data, setData] = useState(null)
   useEffect(() => {
     chrome.storage.sync.get(null, items => {
@@ -83,6 +100,53 @@ function StashModal({isOpen, onRequestClose, chromePort}) {
       )
     });
   }, [])
+  console.debug(`data: ${data}`)
+  useEffect(() => {
+    if (data === null) return
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+      for (const stashKey in changes) {
+        const change = changes[stashKey]
+        const date = new Date(stashKey)
+        console.debug("[STORAGE CHANGES] '%s' in '%s': old '%s' new '%s'", stashKey, namespace, change.oldValue, change.newValue)
+        if (change.oldValue === undefined) {
+          // Added a new stash entry
+          const lastEntry = data[0]
+          const entry = {
+            stashKey,
+            time: { hours: date.getHours(), minutes: date.getMinutes() },
+            entries: change.newValue
+          }
+          if (hasSameDate(lastEntry.date, date)) {
+            lastEntry.entries.unshift(entry)
+          } else {
+            data.unshift({
+              date: {
+                fullYear: date.getFullYear(),
+                month: date.getMonth(),
+                date: date.getDate(),
+                day: date.getDay()
+              },
+              entries: [entry]
+            });
+          }
+        } else if (change.newValue === undefined) {
+          // Removed some existing entry
+          const index  = data.findIndex(entry => hasSameDate(date, entry.date))
+          if (index < 0) return
+          const {entries} = data[index]
+          const index1 = entries.findIndex(entry => stashKey === entry.stashKey)
+          if (index1 < 0) return
+          entries.splice(index1, 1)
+          if (entries.length === 0)
+            data.splice(index, 1)
+        } else {
+          // Updated some existing entry
+          console.error('Unknown behaviour: update operation should not be supported')
+        }
+        setData([...data])
+      }
+    })
+  }, [data == null])
   const style = {
     overlay: {
       backgroundColor: "rgba(255, 255, 255, .0)",
