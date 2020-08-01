@@ -49,6 +49,7 @@ function StashModal({isOpen, onRequestClose, chromePort}) {
       console.log(items)
       setData(
         Object.entries(items)
+          .sort(([timestamp], [timestamp1]) => -timestamp.localeCompare(timestamp1))
           .map(([timestamp, entries]) => {
             const date = new Date(timestamp)
             return {
