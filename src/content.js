@@ -223,22 +223,14 @@ const months = [
 function StashDate({fullYear, month, date, day}) {
   function displayDate(fullYear, month, date, day) {
     const today = new Date();
-    const thisYear = today.getFullYear();
+    const thatDate = {fullYear, month, date}
     const commonPart = `${daysOfWeek[day]}, ${months[month]} ${date}`;
-    if (
-      fullYear == thisYear &&
-      month == today.getMonth() &&
-      date == today.getDate()
-    )
+    if (hasSameDate(thatDate, today))
       return `Today - ${commonPart}`;
     today.setDate(today.getDate() - 1);
-    if (
-      fullYear == today.getFullYear() &&
-      month == today.getMonth() &&
-      date == today.getDate()
-    )
+    if (hasSameDate(thatDate, today))
       return `Yesterday - ${commonPart}`;
-    if (fullYear == thisYear) return `${commonPart}`;
+    if (fullYear == today.getFullYear()) return `${commonPart}`;
     else return `${commonPart}, ${fullYear}`;
   }
   return (
