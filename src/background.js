@@ -12,6 +12,7 @@ import detachTabs from "./chrome/tabs/detachTabs";
 import moveTabs from "./chrome/tabs/moveTabs";
 import navigateToUnpinnedTab from "./chrome/tabs/navigateToUnpinnedTab";
 import stashTabs from "./chrome/tabs/stashTabs";
+import restoreTabs from "./chrome/tabs/restoreTabs";
 
 chrome.runtime.onConnect.addListener(({ name, onMessage }) => {
   if (name == PORT_NAME_DEFAULT)
@@ -34,19 +35,8 @@ function duplicateCurrentTab() {
 
 function popTabs(stashKey) {
   chrome.storage.sync.get({[stashKey]: {}}, items => {
-    restoreTabs(items[stashKey], () => {
+    restoreTabs(items[stashKey].map(({url}) => url), () => {
       chrome.storage.sync.remove(stashKey)
     })
   })
-}
-
-function restoreTabs(entries, callback) {
-  if (entries.length == 0) 
-    callback()
-  else {
-    const [{url}, ...rest] = entries
-    chrome.tabs.create({url}, () => {
-      restoreTabs(rest, callback)
-    })
-  }
 }
