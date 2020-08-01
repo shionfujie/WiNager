@@ -61,7 +61,7 @@ function StashModal({isOpen, onRequestClose, chromePort}) {
   const [data, setData] = useState(null)
   useEffect(() => {
     chrome.storage.sync.get(null, items => {
-      console.log(items)
+      console.debug(items)
       setData(
         groupByDate(
           Object.entries(items)
