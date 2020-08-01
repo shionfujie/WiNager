@@ -43,12 +43,27 @@ function Content() {
 }
 
 function StashModal({isOpen, onRequestClose, chromePort}) {
+  function groupByDate(data) {
+    return data.reduce((acc, {stashKey, date: {fullYear, month, date, day, ...time}, entries}) => {
+      const last = acc[acc.length - 1]
+      if (last && last.date.fullYear === fullYear && last.date.month === month && last.date.date === date) 
+        last.entries.push({ time, entries })
+      else 
+        acc.push({
+          stashKey,
+          date: { fullYear, month, date, day },
+          entries: [ { time, entries } ]
+        })
+      return acc
+    }, [])
+  }
   const [data, setData] = useState(null)
   useEffect(() => {
     chrome.storage.sync.get(null, items => {
       console.log(items)
       setData(
-        Object.entries(items)
+        groupByDate(
+          Object.entries(items)
           .sort(([timestamp], [timestamp1]) => -timestamp.localeCompare(timestamp1))
           .map(([timestamp, entries]) => {
             const date = new Date(timestamp)
@@ -65,6 +80,7 @@ function StashModal({isOpen, onRequestClose, chromePort}) {
               entries
             }
           })
+        )
       )
     });
   }, [])
@@ -95,25 +111,11 @@ function StashModal({isOpen, onRequestClose, chromePort}) {
 }
 
 function StashList({data, chromePort}) {
-  function groupByDate(data) {
-    return data.reduce((acc, {stashKey, date: {fullYear, month, date, day, ...time}, entries}) => {
-      const last = acc[acc.length - 1]
-      if (last && last.date.fullYear === fullYear && last.date.month === month && last.date.date === date) 
-        last.entries.push({ time, entries })
-      else 
-        acc.push({
-          stashKey,
-          date: { fullYear, month, date, day },
-          entries: [ { time, entries } ]
-        })
-      return acc
-    }, [])
-  }
   return (
     <div
       className={"flexbox flexbox-direction-column padding-horizontal-larger"}
     >
-      {groupByDate(data).map(({stashKey, date: {fullYear, month, date, day}, entries}) => 
+      {data.map(({stashKey, date: {fullYear, month, date, day}, entries}) => 
         <>
           <StashDate
             key={`${fullYear}-${month}-${date}`}
