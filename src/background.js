@@ -12,7 +12,6 @@ import detachTabs from "./chrome/tabs/detachTabs";
 import moveTabs from "./chrome/tabs/moveTabs";
 import duplicateCurrentTab from "./chrome/tabs/duplicateCurrentTab"
 import navigateToUnpinnedTab from "./chrome/tabs/navigateToUnpinnedTab";
-import stashTabs from "./chrome/tabs/stashTabs";
 import restoreTabs from "./chrome/tabs/restoreTabs";
 
 chrome.runtime.onConnect.addListener(({ name, onMessage }) => {
@@ -34,4 +33,16 @@ function popTabs(stashKey) {
       chrome.storage.sync.remove(stashKey)
     })
   })
+}
+
+function stashTabs() {
+  chrome.tabs.query({ highlighted: true, currentWindow: true }, tabs => {
+    const entries = tabs.map(({ title, url }) => ({ title, url }));
+    const timestamp = new Date().toISOString();
+    chrome.storage.sync.set({ [timestamp]: entries }, () => {
+      chrome.storage.sync.get(null, items => {
+        console.log(items);
+      });
+    });
+  });
 }
