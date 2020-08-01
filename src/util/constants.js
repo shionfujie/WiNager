@@ -1,0 +1,7 @@
+export const PORT_NAME_DEFAULT = "WiNager default"
+export const MESSAGE_DETACH = "detach"
+export const MESSAGE_MOVE = "move"
+export const MESSAGE_DUPLICATE = "duplicate"
+export const MESSAGE_NAVIGATE_UNPINNED = "navigate unpinned"
+export const MESSAGE_STASH = "stash"
+export const MESSAGE_STASH_POP = "stash pop"
