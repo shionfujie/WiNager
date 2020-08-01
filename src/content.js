@@ -47,12 +47,11 @@ function StashModal({isOpen, onRequestClose, chromePort}) {
     return data.reduce((acc, {stashKey, date: {fullYear, month, date, day, ...time}, entries}) => {
       const last = acc[acc.length - 1]
       if (last && last.date.fullYear === fullYear && last.date.month === month && last.date.date === date) 
-        last.entries.push({ time, entries })
+        last.entries.push({ stashKey, time, entries })
       else 
         acc.push({
-          stashKey,
           date: { fullYear, month, date, day },
-          entries: [ { time, entries } ]
+          entries: [ { stashKey, time, entries } ]
         })
       return acc
     }, [])
@@ -115,7 +114,7 @@ function StashList({data, chromePort}) {
     <div
       className={"flexbox flexbox-direction-column padding-horizontal-larger"}
     >
-      {data.map(({stashKey, date: {fullYear, month, date, day}, entries}) => 
+      {data.map(({date: {fullYear, month, date, day}, entries}) => 
         <>
           <StashDate
             key={`${fullYear}-${month}-${date}`}
@@ -124,7 +123,7 @@ function StashList({data, chromePort}) {
             date={date}
             day={day}
           />
-          {entries.map(({time, entries}) => 
+          {entries.map(({stashKey, time, entries}) =>
             <>
               <StashEntries
                 key={stashKey}
@@ -134,7 +133,7 @@ function StashList({data, chromePort}) {
                 entries={entries}
                 chromePort={chromePort}
               />
-              <Separator key={`${stashKey}-Separator`}/>
+              <Separator key={`${stashKey}-Separator`} />
             </>
           )}
         </>
@@ -211,8 +210,9 @@ function StashEntries({stashKey, hours, minutes, entries, chromePort}) {
   return (
     <div className={"padding-top-smaller padding-bottom-medium"}>
       <StashCaption hours={hours} minutes={minutes} count={count} />
-      {entries.map(({ title, url }) => {
-        return <StashEntry title={title} url={url} />;
+      {entries.map(({ title, url }, idx) => {
+        console.debug("[%s] %s", `${stashKey}-${idx}`, title)
+        return <StashEntry key={`${stashKey}-${idx}`} title={title} url={url} />;
       })}
       <RestoreButton onClick={() => {
         if (chromePort != null)
