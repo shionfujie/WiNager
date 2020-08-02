@@ -128,8 +128,8 @@ function StashModal({isOpen, onRequestClose, chromePort}) {
           // Updated some existing entry
           console.error('Unknown behaviour: update operation should not be supported')
         }
-        setData([...data])
       }
+      setData([...data])
     })
   }, [data == null])
   const style = {
