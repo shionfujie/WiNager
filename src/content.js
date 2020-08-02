@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import ReactModal from "react-modal";
+import Separator from "./components/Separator";
 import StashDate from "./components/StashDate";
 import StashEntries from "./components/StashEntries";
 import "./css/content.css";
@@ -190,10 +191,6 @@ function StashList({data, chromePort}) {
       )}
     </div>
   );
-}
-
-function Separator() {
-  return <div class="border-shade-87 border-top-normal"></div>
 }
 
 const app = document.createElement("div");
