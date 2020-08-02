@@ -11,14 +11,10 @@ export default function StashModal({ isOpen, onRequestClose, chromePort }) {
   useEffect(() => {
     getStashEntries(data => setUIModel(UIModel(data)));
   }, []);
-  console.debug(`uiModel: ${uiModel}`);
   useEffect(() => {
     if (uiModel === null) return;
     subscribeToStashEntryChanges(changes => {
-      console.debug(changes);
       for (const change of changes) {
-        console.debug(change);
-        console.debug(change.type);
         if (change.type === "add") {
           uiModel.addEntry(change.date, change.entry);
         } else if (change.type === "remove") {
