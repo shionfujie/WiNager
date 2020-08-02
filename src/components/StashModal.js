@@ -14,54 +14,35 @@ export default function StashModal({ isOpen, onRequestClose, chromePort }) {
   console.debug(`data: ${data}`);
   useEffect(() => {
     if (data === null) return;
-    chrome.storage.onChanged.addListener((changes, namespace) => {
-      for (const stashKey in changes) {
-        const change = changes[stashKey];
-        const date = new Date(stashKey);
-        console.debug(
-          "[STORAGE CHANGES] '%s' in '%s': old '%s' new '%s'",
-          stashKey,
-          namespace,
-          change.oldValue,
-          change.newValue
-        );
-        if (change.oldValue === undefined) {
-          // Added a new stash entry
+    subscribeToStashEntryChanges(changes => {
+      console.debug(changes);
+      for (const change of changes) {
+        console.debug(change);
+        console.debug(change.type);
+        if (change.type === "add") {
+          const { date, entry } = change;
           const lastEntry = data[0];
-          const entry = {
-            stashKey,
-            time: { hours: date.getHours(), minutes: date.getMinutes() },
-            entries: change.newValue
-          };
           if (hasSameDate(lastEntry.date, date)) {
             lastEntry.entries.unshift(entry);
           } else {
             data.unshift({
-              date: {
-                fullYear: date.getFullYear(),
-                month: date.getMonth(),
-                date: date.getDate(),
-                day: date.getDay()
-              },
+              date: date,
               entries: [entry]
             });
           }
-        } else if (change.newValue === undefined) {
-          // Removed some existing entry
+        } else if (change.type === "remove") {
+          const { date, stashKey } = change;
           const index = data.findIndex(entry => hasSameDate(date, entry.date));
+          console.debug(index);
           if (index < 0) return;
           const { entries } = data[index];
           const index1 = entries.findIndex(
             entry => stashKey === entry.stashKey
           );
+          console.debug(index1);
           if (index1 < 0) return;
           entries.splice(index1, 1);
           if (entries.length === 0) data.splice(index, 1);
-        } else {
-          // Updated some existing entry
-          console.error(
-            "Unknown behaviour: update operation should not be supported"
-          );
         }
       }
       setData([...data]);
@@ -71,35 +52,6 @@ export default function StashModal({ isOpen, onRequestClose, chromePort }) {
     <Modal isOpen={data && isOpen} onRequestClose={onRequestClose}>
       {data && isOpen && <StashList data={data} chromePort={chromePort} />}
     </Modal>
-  );
-}
-
-function Modal({ isOpen, onRequestClose, children }) {
-  return (
-    <ReactModal
-      isOpen={isOpen}
-      onRequestClose={onRequestClose}
-      style={{
-        overlay: {
-          backgroundColor: "rgba(255, 255, 255, .0)",
-          zIndex: 100000
-        },
-        content: {
-          top: 8,
-          right: 8,
-          left: null,
-          bottom: null,
-          width: 480,
-          height: "75%",
-          border: 0,
-          borderRadius: 2,
-          boxShadow:
-            "0 8px 10px 1px rgba(0,0,0,0.14), 0 3px 14px 2px rgba(0,0,0,0.12), 0 5px 5px -3px rgba(0,0,0,0.2)"
-        }
-      }}
-    >
-      {children}
-    </ReactModal>
   );
 }
 
@@ -154,4 +106,80 @@ function getStashEntries(callback) {
       )
     );
   });
+}
+
+function subscribeToStashEntryChanges(callback) {
+  chrome.storage.onChanged.addListener((changes, namespace) => {
+    const result = [];
+    for (const stashKey in changes) {
+      const change = changes[stashKey];
+      const date = new Date(stashKey);
+      console.debug(
+        "[STORAGE CHANGES] '%s' in '%s': old '%s' new '%s'",
+        stashKey,
+        namespace,
+        change.oldValue,
+        change.newValue
+      );
+      if (change.oldValue === undefined) {
+        // Added a new stash entry
+        result.push({
+          type: "add",
+          date: {
+            fullYear: date.getFullYear(),
+            month: date.getMonth(),
+            date: date.getDate(),
+            day: date.getDay()
+          },
+          entry: {
+            stashKey,
+            time: { hours: date.getHours(), minutes: date.getMinutes() },
+            entries: change.newValue
+          }
+        });
+      } else if (change.newValue === undefined) {
+        // Removed some existing entry
+        result.push({
+          type: "remove",
+          date,
+          stashKey
+        });
+      } else {
+        // Updated some existing entry
+        console.error(
+          "Unknown behaviour: update operation should not be supported"
+        );
+      }
+    }
+    callback(result);
+  });
+}
+
+function Modal({ isOpen, onRequestClose, children }) {
+  return (
+    <ReactModal
+      isOpen={isOpen}
+      onRequestClose={onRequestClose}
+      style={{
+        overlay: {
+          backgroundColor: "rgba(255, 255, 255, .0)",
+          zIndex: 100000
+        },
+        content: {
+          top: 8,
+          right: 8,
+          left: null,
+          bottom: null,
+          width: 480,
+          height: "75%",
+          border: 0,
+          borderRadius: 2,
+          boxShadow:
+            "0 8px 10px 1px rgba(0,0,0,0.14), 0 3px 14px 2px rgba(0,0,0,0.12), 0 5px 5px -3px rgba(0,0,0,0.2)"
+        }
+      }}
+    >
+      {children}
+    </ReactModal>
+  );
 }
