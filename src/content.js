@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import ReactModal from "react-modal";
+import RestoreButton from "./components/RestoreButton"
 import "./css/content.css";
 import {
   detachTab,
@@ -292,18 +293,6 @@ function StashEntry({title, url}) {
         title={`${title} - ${url}`}
       >
         {title}
-      </div>
-    </div>
-  );
-}
-
-function RestoreButton({count, onClick}) {
-  return (
-    <div class="inline-block padding-top-larger padding-bottom-medium">
-      <div 
-        onClick={onClick}
-        class="pointer underline font-size-medium font-weight-bold line-height-medium winager-primary">
-        Restore all {count} items
       </div>
     </div>
   );
