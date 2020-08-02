@@ -6,60 +6,10 @@ import StashList from "./StashList";
 import hasSameDate from "../util/dates/hasSameDate";
 
 export default function StashModal({ isOpen, onRequestClose, chromePort }) {
-  function groupByDate(data) {
-    return data.reduce(
-      (
-        acc,
-        { stashKey, date: { fullYear, month, date, day, ...time }, entries }
-      ) => {
-        const last = acc[acc.length - 1];
-        if (
-          last &&
-          last.date.fullYear === fullYear &&
-          last.date.month === month &&
-          last.date.date === date
-        )
-          last.entries.push({ stashKey, time, entries });
-        else
-          acc.push({
-            date: { fullYear, month, date, day },
-            entries: [{ stashKey, time, entries }]
-          });
-        return acc;
-      },
-      []
-    );
-  }
   console.debug("rendering StashModal");
   const [data, setData] = useState(null);
   useEffect(() => {
-    chrome.storage.sync.get(null, items => {
-      console.debug(items);
-      setData(
-        groupByDate(
-          Object.entries(items)
-            .sort(
-              ([timestamp], [timestamp1]) =>
-                -timestamp.localeCompare(timestamp1)
-            )
-            .map(([timestamp, entries]) => {
-              const date = new Date(timestamp);
-              return {
-                stashKey: timestamp,
-                date: {
-                  fullYear: date.getFullYear(),
-                  month: date.getMonth(),
-                  date: date.getDate(),
-                  day: date.getDay(),
-                  hours: date.getHours(),
-                  minutes: date.getMinutes()
-                },
-                entries
-              };
-            })
-        )
-      );
-    });
+    getStashEntries(data => setData(data));
   }, []);
   console.debug(`data: ${data}`);
   useEffect(() => {
@@ -118,16 +68,13 @@ export default function StashModal({ isOpen, onRequestClose, chromePort }) {
     });
   }, [data == null]);
   return (
-    <Modal
-      isOpen={data && isOpen}
-      onRequestClose={onRequestClose}
-    >
+    <Modal isOpen={data && isOpen} onRequestClose={onRequestClose}>
       {data && isOpen && <StashList data={data} chromePort={chromePort} />}
     </Modal>
   );
 }
 
-function Modal({isOpen, onRequestClose, children}) {
+function Modal({ isOpen, onRequestClose, children }) {
   return (
     <ReactModal
       isOpen={isOpen}
@@ -154,4 +101,57 @@ function Modal({isOpen, onRequestClose, children}) {
       {children}
     </ReactModal>
   );
+}
+
+function getStashEntries(callback) {
+  function groupByDate(data) {
+    return data.reduce(
+      (
+        acc,
+        { stashKey, date: { fullYear, month, date, day, ...time }, entries }
+      ) => {
+        const last = acc[acc.length - 1];
+        if (
+          last &&
+          last.date.fullYear === fullYear &&
+          last.date.month === month &&
+          last.date.date === date
+        )
+          last.entries.push({ stashKey, time, entries });
+        else
+          acc.push({
+            date: { fullYear, month, date, day },
+            entries: [{ stashKey, time, entries }]
+          });
+        return acc;
+      },
+      []
+    );
+  }
+  chrome.storage.sync.get(null, items => {
+    console.debug(items);
+    callback(
+      groupByDate(
+        Object.entries(items)
+          .sort(
+            ([timestamp], [timestamp1]) => -timestamp.localeCompare(timestamp1)
+          )
+          .map(([timestamp, entries]) => {
+            const date = new Date(timestamp);
+            return {
+              stashKey: timestamp,
+              date: {
+                fullYear: date.getFullYear(),
+                month: date.getMonth(),
+                date: date.getDate(),
+                day: date.getDay(),
+                hours: date.getHours(),
+                minutes: date.getMinutes()
+              },
+              entries
+            };
+          })
+      )
+    );
+  });
 }
