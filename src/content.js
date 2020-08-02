@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import ReactModal from "react-modal";
+import StashEntry from "./components/StashEntry"
 import RestoreButton from "./components/RestoreButton"
 import "./css/content.css";
 import {
@@ -280,19 +281,6 @@ function StashCaption({hours, minutes, count}) {
       </div>
       <div class="shade-056 font-size-small font-weight-medium line-height-medium">
         {count} items
-      </div>
-    </div>
-  );
-}
-
-function StashEntry({title, url}) {
-  return (
-    <div class="shade-087 font-size-medium font-weight-medium padding-vertical-smaller line-height-medium">
-      <div
-        class="pointer overflow-ellipsis"
-        title={`${title} - ${url}`}
-      >
-        {title}
       </div>
     </div>
   );
