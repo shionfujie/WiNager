@@ -7,52 +7,61 @@ import hasSameDate from "../util/dates/hasSameDate";
 
 export default function StashModal({ isOpen, onRequestClose, chromePort }) {
   console.debug("rendering StashModal");
-  const [data, setData] = useState(null);
+  const [uiModel, setUIModel] = useState(null);
   useEffect(() => {
-    getStashEntries(data => setData(data));
+    getStashEntries(data => setUIModel(UIModel(data)));
   }, []);
-  console.debug(`data: ${data}`);
+  console.debug(`uiModel: ${uiModel}`);
   useEffect(() => {
-    if (data === null) return;
+    if (uiModel === null) return;
     subscribeToStashEntryChanges(changes => {
       console.debug(changes);
       for (const change of changes) {
         console.debug(change);
         console.debug(change.type);
         if (change.type === "add") {
-          const { date, entry } = change;
-          const lastEntry = data[0];
-          if (hasSameDate(lastEntry.date, date)) {
-            lastEntry.entries.unshift(entry);
-          } else {
-            data.unshift({
-              date: date,
-              entries: [entry]
-            });
-          }
+          uiModel.addEntry(change.date, change.entry);
         } else if (change.type === "remove") {
-          const { date, stashKey } = change;
-          const index = data.findIndex(entry => hasSameDate(date, entry.date));
-          console.debug(index);
-          if (index < 0) return;
-          const { entries } = data[index];
-          const index1 = entries.findIndex(
-            entry => stashKey === entry.stashKey
-          );
-          console.debug(index1);
-          if (index1 < 0) return;
-          entries.splice(index1, 1);
-          if (entries.length === 0) data.splice(index, 1);
+          uiModel.removeEntry(change.date, change.stashKey);
         }
       }
-      setData([...data]);
+      setUIModel(uiModel.copy());
     });
-  }, [data == null]);
+  }, [uiModel == null]);
   return (
-    <Modal isOpen={data && isOpen} onRequestClose={onRequestClose}>
-      {data && isOpen && <StashList data={data} chromePort={chromePort} />}
+    <Modal isOpen={uiModel && isOpen} onRequestClose={onRequestClose}>
+      {uiModel && isOpen && <StashList data={uiModel.data} chromePort={chromePort} />}
     </Modal>
   );
+}
+
+function UIModel(data) {
+  function addEntry(date, entry) {
+    const lastEntry = data[0];
+    if (hasSameDate(lastEntry.date, date)) {
+      lastEntry.entries.unshift(entry);
+    } else {
+      data.unshift({
+        date: date,
+        entries: [entry]
+      });
+    }
+  }
+  function removeEntry(date, stashKey) {
+    const index = data.findIndex(entry => hasSameDate(date, entry.date));
+    console.debug(index);
+    if (index < 0) return;
+    const { entries } = data[index];
+    const index1 = entries.findIndex(entry => stashKey === entry.stashKey);
+    console.debug(index1);
+    if (index1 < 0) return;
+    entries.splice(index1, 1);
+    if (entries.length === 0) data.splice(index, 1);
+  }
+  function copy() {
+    return { ...this };
+  }
+  return { data, addEntry, removeEntry, copy };
 }
 
 function getStashEntries(callback) {
