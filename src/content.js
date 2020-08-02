@@ -3,17 +3,14 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import ReactModal from "react-modal";
-import StashCaption from "./components/StashCaption"
-import StashEntry from "./components/StashEntry"
-import RestoreButton from "./components/RestoreButton"
+import StashEntries from "./components/StashEntries";
 import "./css/content.css";
 import {
   detachTab,
   moveTab,
   duplicate,
   navigateUnpinned,
-  stash,
-  popStashEntry
+  stash
 } from "./util/actions";
 import { PORT_NAME_DEFAULT } from "./util/constants";
 import usePort from "./hooks/chrome/usePort";
@@ -245,23 +242,6 @@ function StashDate({fullYear, month, date, day}) {
       >
         {displayDate(fullYear, month, date, day)}
       </div>
-    </div>
-  );
-}
-
-function StashEntries({stashKey, hours, minutes, entries, chromePort}) {
-  const count = entries.length;
-  return (
-    <div className={"padding-top-smaller padding-bottom-medium"}>
-      <StashCaption hours={hours} minutes={minutes} count={count} />
-      {entries.map(({ title, url }, idx) => {
-        console.debug("[%s] %s", `${stashKey}-${idx}`, title)
-        return <StashEntry key={`${stashKey}-${idx}`} title={title} url={url} />;
-      })}
-      <RestoreButton onClick={() => {
-        if (chromePort != null)
-          chromePort.postMessage(popStashEntry(stashKey))
-      }} count={count} />
     </div>
   );
 }
