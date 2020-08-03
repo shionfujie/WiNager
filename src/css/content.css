@@ -55,7 +55,7 @@ body {
 }
 
 .font-weight-bold {
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .shade-056 {
@@ -278,5 +278,9 @@ body {
 }
 
 .underline {
+    text-decoration: underline;
+}
+
+.underline-on-hover:hover {
     text-decoration: underline;
 }
