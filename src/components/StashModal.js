@@ -8,11 +8,20 @@ import hasSameDate from "../util/dates/hasSameDate";
 
 export default function StashModal({ isOpen, onRequestClose, chromePort }) {
   console.debug("rendering StashModal");
-  const [uiModel, setUIModel] = useState(null);
+  const [uiModel] = useUIModel()
+  return (
+    <Modal isOpen={uiModel && isOpen} onRequestClose={onRequestClose}>
+      {uiModel && isOpen && <StashList data={uiModel.data} chromePort={chromePort} />}
+    </Modal>
+  );
+}
+
+function useUIModel() {
   const stashEntrySource = useStashEntrySource()
+  const [uiModel, setUIModel] = useState(null);
   useEffect(() => {
     stashEntrySource.getStashEntries(data => setUIModel(UIModel(data)));
-  }, []);
+  }, [stashEntrySource]);
   useEffect(() => {
     if (uiModel === null) return;
     stashEntrySource.subscribeToStashEntryChanges(changes => {
@@ -25,12 +34,8 @@ export default function StashModal({ isOpen, onRequestClose, chromePort }) {
       }
       setUIModel(uiModel.copy());
     });
-  }, [uiModel == null]);
-  return (
-    <Modal isOpen={uiModel && isOpen} onRequestClose={onRequestClose}>
-      {uiModel && isOpen && <StashList data={uiModel.data} chromePort={chromePort} />}
-    </Modal>
-  );
+  }, [uiModel === null]);
+  return [uiModel]
 }
 
 function UIModel(data) {
