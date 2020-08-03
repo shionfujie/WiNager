@@ -2,14 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import ReactModal from "react-modal";
+import { useStashEntrySource } from "../di/hooks";
 import StashList from "./StashList";
 import hasSameDate from "../util/dates/hasSameDate";
 
 export default function StashModal({ isOpen, onRequestClose, chromePort }) {
   console.debug("rendering StashModal");
   const [uiModel, setUIModel] = useState(null);
+  const stashEntrySource = useStashEntrySource()
   useEffect(() => {
-    getStashEntries(data => setUIModel(UIModel(data)));
+    stashEntrySource.getStashEntries(data => setUIModel(UIModel(data)));
   }, []);
   useEffect(() => {
     if (uiModel === null) return;
@@ -58,59 +60,6 @@ function UIModel(data) {
     return { ...this };
   }
   return { data, addEntry, removeEntry, copy };
-}
-
-function getStashEntries(callback) {
-  function groupByDate(data) {
-    return data.reduce(
-      (
-        acc,
-        { stashKey, date: { fullYear, month, date, day, ...time }, entries }
-      ) => {
-        const last = acc[acc.length - 1];
-        if (
-          last &&
-          last.date.fullYear === fullYear &&
-          last.date.month === month &&
-          last.date.date === date
-        )
-          last.entries.push({ stashKey, time, entries });
-        else
-          acc.push({
-            date: { fullYear, month, date, day },
-            entries: [{ stashKey, time, entries }]
-          });
-        return acc;
-      },
-      []
-    );
-  }
-  chrome.storage.sync.get(null, items => {
-    console.debug(items);
-    callback(
-      groupByDate(
-        Object.entries(items)
-          .sort(
-            ([timestamp], [timestamp1]) => -timestamp.localeCompare(timestamp1)
-          )
-          .map(([timestamp, entries]) => {
-            const date = new Date(timestamp);
-            return {
-              stashKey: timestamp,
-              date: {
-                fullYear: date.getFullYear(),
-                month: date.getMonth(),
-                date: date.getDate(),
-                day: date.getDay(),
-                hours: date.getHours(),
-                minutes: date.getMinutes()
-              },
-              entries
-            };
-          })
-      )
-    );
-  });
 }
 
 function subscribeToStashEntryChanges(callback) {
