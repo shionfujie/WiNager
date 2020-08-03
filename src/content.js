@@ -2,7 +2,8 @@
 
 import React from "react";
 import ReactDOM from "react-dom";
-import StashModal from "./components/StashModal"
+import StashModal from "./components/StashModal";
+import { StashEntrySourceProvider } from "./di/providers";
 import "./css/content.css";
 import {
   detachTab,
@@ -33,16 +34,25 @@ function Content() {
     } else if (code == "KeyD" && altKey) port.postMessage(duplicate());
     else if (code.startsWith("Digit") && ctrlKey && altKey && metaKey)
       port.postMessage(navigateUnpinned(parseInt(code[5]) - 1));
-    else if (code == "KeyS" && ctrlKey && altKey && metaKey) 
+    else if (code == "KeyS" && ctrlKey && altKey && metaKey)
       port.postMessage(stash());
-    else if (code == "KeyP" && ctrlKey && altKey && metaKey)
-      openStashModal()
+    else if (code == "KeyP" && ctrlKey && altKey && metaKey) openStashModal();
   });
-  return <StashModal isOpen={stashModalIsOpen} onRequestClose={closeStashModal} chromePort={port}/>;
+  return (
+    <StashModal
+      isOpen={stashModalIsOpen}
+      onRequestClose={closeStashModal}
+      chromePort={port}
+    />
+  );
 }
-
 
 const app = document.createElement("div");
 app.id = "my-extension-root";
 document.body.appendChild(app);
-ReactDOM.render(<Content />, app);
+ReactDOM.render(
+  <StashEntrySourceProvider>
+    <Content />
+  </StashEntrySourceProvider>,
+  app
+);
