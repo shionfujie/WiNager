@@ -2,18 +2,29 @@
 
 import React, { useState, useEffect } from "react";
 import ReactModal from "react-modal";
+import { useStashEntrySource } from "../di/hooks";
 import StashList from "./StashList";
 import hasSameDate from "../util/dates/hasSameDate";
 
 export default function StashModal({ isOpen, onRequestClose, chromePort }) {
   console.debug("rendering StashModal");
+  const [uiModel] = useUIModel()
+  return (
+    <Modal isOpen={uiModel && isOpen} onRequestClose={onRequestClose}>
+      {uiModel && isOpen && <StashList data={uiModel.data} chromePort={chromePort} />}
+    </Modal>
+  );
+}
+
+function useUIModel() {
+  const stashEntrySource = useStashEntrySource()
   const [uiModel, setUIModel] = useState(null);
   useEffect(() => {
-    getStashEntries(data => setUIModel(UIModel(data)));
-  }, []);
+    stashEntrySource.getStashEntries(data => setUIModel(UIModel(data)));
+  }, [stashEntrySource]);
   useEffect(() => {
     if (uiModel === null) return;
-    subscribeToStashEntryChanges(changes => {
+    stashEntrySource.subscribeToStashEntryChanges(changes => {
       for (const change of changes) {
         if (change.type === "add") {
           uiModel.addEntry(change.date, change.entry);
@@ -23,12 +34,8 @@ export default function StashModal({ isOpen, onRequestClose, chromePort }) {
       }
       setUIModel(uiModel.copy());
     });
-  }, [uiModel == null]);
-  return (
-    <Modal isOpen={uiModel && isOpen} onRequestClose={onRequestClose}>
-      {uiModel && isOpen && <StashList data={uiModel.data} chromePort={chromePort} />}
-    </Modal>
-  );
+  }, [uiModel === null]);
+  return [uiModel]
 }
 
 function UIModel(data) {
@@ -58,106 +65,6 @@ function UIModel(data) {
     return { ...this };
   }
   return { data, addEntry, removeEntry, copy };
-}
-
-function getStashEntries(callback) {
-  function groupByDate(data) {
-    return data.reduce(
-      (
-        acc,
-        { stashKey, date: { fullYear, month, date, day, ...time }, entries }
-      ) => {
-        const last = acc[acc.length - 1];
-        if (
-          last &&
-          last.date.fullYear === fullYear &&
-          last.date.month === month &&
-          last.date.date === date
-        )
-          last.entries.push({ stashKey, time, entries });
-        else
-          acc.push({
-            date: { fullYear, month, date, day },
-            entries: [{ stashKey, time, entries }]
-          });
-        return acc;
-      },
-      []
-    );
-  }
-  chrome.storage.sync.get(null, items => {
-    console.debug(items);
-    callback(
-      groupByDate(
-        Object.entries(items)
-          .sort(
-            ([timestamp], [timestamp1]) => -timestamp.localeCompare(timestamp1)
-          )
-          .map(([timestamp, entries]) => {
-            const date = new Date(timestamp);
-            return {
-              stashKey: timestamp,
-              date: {
-                fullYear: date.getFullYear(),
-                month: date.getMonth(),
-                date: date.getDate(),
-                day: date.getDay(),
-                hours: date.getHours(),
-                minutes: date.getMinutes()
-              },
-              entries
-            };
-          })
-      )
-    );
-  });
-}
-
-function subscribeToStashEntryChanges(callback) {
-  chrome.storage.onChanged.addListener((changes, namespace) => {
-    const result = [];
-    for (const stashKey in changes) {
-      const change = changes[stashKey];
-      const date = new Date(stashKey);
-      console.debug(
-        "[STORAGE CHANGES] '%s' in '%s': old '%s' new '%s'",
-        stashKey,
-        namespace,
-        change.oldValue,
-        change.newValue
-      );
-      if (change.oldValue === undefined) {
-        // Added a new stash entry
-        result.push({
-          type: "add",
-          date: {
-            fullYear: date.getFullYear(),
-            month: date.getMonth(),
-            date: date.getDate(),
-            day: date.getDay()
-          },
-          entry: {
-            stashKey,
-            time: { hours: date.getHours(), minutes: date.getMinutes() },
-            entries: change.newValue
-          }
-        });
-      } else if (change.newValue === undefined) {
-        // Removed some existing entry
-        result.push({
-          type: "remove",
-          date,
-          stashKey
-        });
-      } else {
-        // Updated some existing entry
-        console.error(
-          "Unknown behaviour: update operation should not be supported"
-        );
-      }
-    }
-    callback(result);
-  });
 }
 
 function Modal({ isOpen, onRequestClose, children }) {
