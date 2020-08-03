@@ -10,7 +10,8 @@ import {
   moveTab,
   duplicate,
   navigateUnpinned,
-  stash
+  stash,
+  popStashEntry
 } from "./util/actions";
 import { PORT_NAME_DEFAULT } from "./util/constants";
 import usePort from "./hooks/chrome/usePort";
@@ -42,7 +43,10 @@ function Content() {
     <StashModal
       isOpen={stashModalIsOpen}
       onRequestClose={closeStashModal}
-      chromePort={port}
+      onRequestRestore={(stashKey) => {
+        if (port != null)
+          port.postMessage(popStashEntry(stashKey));
+      }}
     />
   );
 }

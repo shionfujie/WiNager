@@ -2,9 +2,8 @@ import React from 'react'
 import StashCaption from "./StashCaption"
 import StashEntry from "./StashEntry"
 import RestoreButton from "./RestoreButton"
-import { popStashEntry } from "../util/actions";
 
-export default function StashEntries({ stashKey, hours, minutes, entries, chromePort }) {
+export default function StashEntries({ stashKey, hours, minutes, entries, onRequestRestore }) {
   const count = entries.length;
   return (
     <div className={"padding-top-smaller padding-bottom-medium"}>
@@ -16,10 +15,7 @@ export default function StashEntries({ stashKey, hours, minutes, entries, chrome
         );
       })}
       <RestoreButton
-        onClick={() => {
-          if (chromePort != null)
-            chromePort.postMessage(popStashEntry(stashKey));
-        }}
+        onClick={() => onRequestRestore(stashKey)}
         count={count}
       />
     </div>

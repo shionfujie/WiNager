@@ -6,12 +6,12 @@ import { useStashEntrySource } from "../di/hooks";
 import StashList from "./StashList";
 import hasSameDate from "../util/dates/hasSameDate";
 
-export default function StashModal({ isOpen, onRequestClose, chromePort }) {
+export default function StashModal({ isOpen, onRequestClose, onRequestRestore }) {
   console.debug("rendering StashModal");
   const [uiModel] = useUIModel()
   return (
     <Modal isOpen={uiModel && isOpen} onRequestClose={onRequestClose}>
-      {uiModel && isOpen && <StashList data={uiModel.data} chromePort={chromePort} />}
+      {uiModel && isOpen && <StashList data={uiModel.data} onRequestRestore={onRequestRestore} />}
     </Modal>
   );
 }
