@@ -16,7 +16,8 @@ export default function StashEntrySource() {
         _groupByDate(
           Object.entries(items)
             .sort(
-              ([timestamp], [timestamp1]) => -timestamp.localeCompare(timestamp1)
+              ([timestamp], [timestamp1]) =>
+                -timestamp.localeCompare(timestamp1)
             )
             .map(([timestamp, entries]) => {
               const date = new Date(timestamp);
@@ -35,6 +36,52 @@ export default function StashEntrySource() {
             })
         )
       );
+    });
+  }
+  function subscribeToStashEntryChanges(callback) {
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+      const result = [];
+      for (const stashKey in changes) {
+        const change = changes[stashKey];
+        const date = new Date(stashKey);
+        console.debug(
+          "[STORAGE CHANGES] '%s' in '%s': old '%s' new '%s'",
+          stashKey,
+          namespace,
+          change.oldValue,
+          change.newValue
+        );
+        if (change.oldValue === undefined) {
+          // Added a new stash entry
+          result.push({
+            type: "add",
+            date: {
+              fullYear: date.getFullYear(),
+              month: date.getMonth(),
+              date: date.getDate(),
+              day: date.getDay()
+            },
+            entry: {
+              stashKey,
+              time: { hours: date.getHours(), minutes: date.getMinutes() },
+              entries: change.newValue
+            }
+          });
+        } else if (change.newValue === undefined) {
+          // Removed some existing entry
+          result.push({
+            type: "remove",
+            date,
+            stashKey
+          });
+        } else {
+          // Updated some existing entry
+          console.error(
+            "Unknown behaviour: update operation should not be supported"
+          );
+        }
+      }
+      callback(result);
     });
   }
   function _groupByDate(data) {
@@ -62,5 +109,5 @@ export default function StashEntrySource() {
     );
   }
 
-  return {addStashEntries, getStashEntries}
+  return { addStashEntries, getStashEntries, subscribeToStashEntryChanges };
 }

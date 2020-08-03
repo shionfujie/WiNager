@@ -15,7 +15,7 @@ export default function StashModal({ isOpen, onRequestClose, chromePort }) {
   }, []);
   useEffect(() => {
     if (uiModel === null) return;
-    subscribeToStashEntryChanges(changes => {
+    stashEntrySource.subscribeToStashEntryChanges(changes => {
       for (const change of changes) {
         if (change.type === "add") {
           uiModel.addEntry(change.date, change.entry);
@@ -60,53 +60,6 @@ function UIModel(data) {
     return { ...this };
   }
   return { data, addEntry, removeEntry, copy };
-}
-
-function subscribeToStashEntryChanges(callback) {
-  chrome.storage.onChanged.addListener((changes, namespace) => {
-    const result = [];
-    for (const stashKey in changes) {
-      const change = changes[stashKey];
-      const date = new Date(stashKey);
-      console.debug(
-        "[STORAGE CHANGES] '%s' in '%s': old '%s' new '%s'",
-        stashKey,
-        namespace,
-        change.oldValue,
-        change.newValue
-      );
-      if (change.oldValue === undefined) {
-        // Added a new stash entry
-        result.push({
-          type: "add",
-          date: {
-            fullYear: date.getFullYear(),
-            month: date.getMonth(),
-            date: date.getDate(),
-            day: date.getDay()
-          },
-          entry: {
-            stashKey,
-            time: { hours: date.getHours(), minutes: date.getMinutes() },
-            entries: change.newValue
-          }
-        });
-      } else if (change.newValue === undefined) {
-        // Removed some existing entry
-        result.push({
-          type: "remove",
-          date,
-          stashKey
-        });
-      } else {
-        // Updated some existing entry
-        console.error(
-          "Unknown behaviour: update operation should not be supported"
-        );
-      }
-    }
-    callback(result);
-  });
 }
 
 function Modal({ isOpen, onRequestClose, children }) {
