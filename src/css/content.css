@@ -280,3 +280,7 @@ body {
 .underline {
     text-decoration: underline;
 }
+
+.underline-on-hover:hover {
+    text-decoration: underline;
+}
