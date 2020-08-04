@@ -40,8 +40,14 @@ function popTabs(stashKey) {
 
 function stashTabs() {
   chrome.tabs.query({ highlighted: true, currentWindow: true }, tabs => {
-    stashEntrySource.addStashEntries(
-      tabs.map(({ title, url }) => ({ title, url }))
-    );
+    const ids = []
+    const entries = []
+    for (const {id, title, url} of tabs) {
+      ids.push(id)
+      entries.push({title, url})
+    }
+    chrome.tabs.remove(ids, () => {
+      stashEntrySource.addStashEntries(entries);
+    })
   });
 }
