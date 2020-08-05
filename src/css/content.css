@@ -13,12 +13,12 @@
     background: #b3e5fc;
 }
 
-.ReactModalPortal ::-webkit-scrollbar {
+#winager-extension-modal::-webkit-scrollbar {
     width: 10px;
     background-color: transparent !important;
 }
 
-.ReactModalPortal ::-webkit-scrollbar-thumb {
+#winager-extension-modal::-webkit-scrollbar-thumb {
     width: 10px;
     box-shadow: inset 0 0 0 8px rgba(0, 0, 0, 0.2);
     border-radius: 6px;
