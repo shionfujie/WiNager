@@ -70,6 +70,7 @@ function UIModel(data) {
 function Modal({ isOpen, onRequestClose, children }) {
   return (
     <ReactModal
+      id="winager-extension-modal"
       isOpen={isOpen}
       onRequestClose={onRequestClose}
       style={{

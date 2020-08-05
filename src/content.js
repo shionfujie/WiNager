@@ -52,7 +52,7 @@ function Content() {
 }
 
 const app = document.createElement("div");
-app.id = "my-extension-root";
+app.id = "winager-extension-root";
 document.body.appendChild(app);
 ReactDOM.render(
   <StashEntrySourceProvider>
