@@ -11,7 +11,8 @@ import {
   duplicate,
   navigateUnpinned,
   stash,
-  popStashEntry
+  popStashEntry,
+  toggleAdjacentTabSelection
 } from "./util/actions";
 import { PORT_NAME_DEFAULT } from "./util/constants";
 import usePort from "./hooks/chrome/usePort";
@@ -23,6 +24,7 @@ function Content() {
   const port = usePort(PORT_NAME_DEFAULT);
   const [stashModalIsOpen, openStashModal, closeStashModal] = useSwitch();
   useDocumentKeydown(({ code, shiftKey, ctrlKey, altKey, metaKey }) => {
+    console.debug(code)
     if (port === null) return;
     if (code == "ArrowDown" && shiftKey && ctrlKey) {
       port.postMessage(detachTab());
@@ -38,16 +40,20 @@ function Content() {
       port.postMessage(navigateUnpinned(parseInt(code[5]) - 1));
     else if (code == "KeyS" && ctrlKey && altKey && metaKey)
       port.postMessage(stash());
+    else if (
+      (code == "BracketRight" || code == "BracketLeft") &&
+      ctrlKey &&
+      metaKey
+    ) port.postMessage(toggleAdjacentTabSelection(code == "BracketRight" ? 1 : -1))
     else if (code == "KeyP" && ctrlKey && altKey && metaKey) openStashModal();
-    else if (code == "KeyC" && ctrlKey && metaKey) copyLinkAddress()
+    else if (code == "KeyC" && ctrlKey && metaKey) copyLinkAddress();
   });
   return (
     <StashModal
       isOpen={stashModalIsOpen}
       onRequestClose={closeStashModal}
-      onRequestRestore={(stashKey) => {
-        if (port != null)
-          port.postMessage(popStashEntry(stashKey));
+      onRequestRestore={stashKey => {
+        if (port != null) port.postMessage(popStashEntry(stashKey));
       }}
     />
   );
