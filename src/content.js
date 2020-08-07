@@ -17,6 +17,7 @@ import { PORT_NAME_DEFAULT } from "./util/constants";
 import usePort from "./hooks/chrome/usePort";
 import useSwitch from "./hooks/useSwitch";
 import useDocumentKeydown from "./hooks/useDocumentKeydown";
+import copyLinkAddress from "./usecases/content/copyLinkAddress";
 
 function Content() {
   const port = usePort(PORT_NAME_DEFAULT);
@@ -50,29 +51,6 @@ function Content() {
       }}
     />
   );
-}
-
-function copyLinkAddress() {
-  function getSelectedLinkAddress() {
-    const fragmentChildren = window.getSelection()
-      .getRangeAt(0)
-      .cloneContents()
-      .children
-    for (var i = -1; ++i < fragmentChildren.length;) {
-      const child = fragmentChildren[i]
-      if (child.tagName === "A" && child.href) {
-        return child.href
-      }
-    }
-    return null
-  }
-  const link = getSelectedLinkAddress()
-  if (link === null) return
-  navigator.clipboard.writeText(link)
-    .then(
-      () => console.debug(`Successfully copied '${link}!'`),
-      () => console.debug(`Failed to copy '${link}'`)
-    )
 }
 
 const app = document.createElement("div");
