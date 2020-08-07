@@ -17,6 +17,7 @@ import { PORT_NAME_DEFAULT } from "./util/constants";
 import usePort from "./hooks/chrome/usePort";
 import useSwitch from "./hooks/useSwitch";
 import useDocumentKeydown from "./hooks/useDocumentKeydown";
+import copyLinkAddress from "./usecases/content/copyLinkAddress";
 
 function Content() {
   const port = usePort(PORT_NAME_DEFAULT);
@@ -38,6 +39,7 @@ function Content() {
     else if (code == "KeyS" && ctrlKey && altKey && metaKey)
       port.postMessage(stash());
     else if (code == "KeyP" && ctrlKey && altKey && metaKey) openStashModal();
+    else if (code == "KeyC" && ctrlKey && metaKey) copyLinkAddress()
   });
   return (
     <StashModal
