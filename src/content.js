@@ -38,6 +38,7 @@ function Content() {
     else if (code == "KeyS" && ctrlKey && altKey && metaKey)
       port.postMessage(stash());
     else if (code == "KeyP" && ctrlKey && altKey && metaKey) openStashModal();
+    else if (code == "KeyC" && ctrlKey && metaKey) copyLinkAddress()
   });
   return (
     <StashModal
@@ -49,6 +50,29 @@ function Content() {
       }}
     />
   );
+}
+
+function copyLinkAddress() {
+  function getSelectedLinkAddress() {
+    const fragmentChildren = window.getSelection()
+      .getRangeAt(0)
+      .cloneContents()
+      .children
+    for (var i = -1; ++i < fragmentChildren.length;) {
+      const child = fragmentChildren[i]
+      if (child.tagName === "A" && child.href) {
+        return child.href
+      }
+    }
+    return null
+  }
+  const link = getSelectedLinkAddress()
+  if (link === null) return
+  navigator.clipboard.writeText(link)
+    .then(
+      () => console.debug(`Successfully copied '${link}!'`),
+      () => console.debug(`Failed to copy '${link}'`)
+    )
 }
 
 const app = document.createElement("div");
