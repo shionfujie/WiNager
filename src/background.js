@@ -14,6 +14,7 @@ import moveTabs from "./chrome/tabs/moveTabs";
 import duplicateCurrentTab from "./chrome/tabs/duplicateCurrentTab";
 import navigateToUnpinnedTab from "./chrome/tabs/navigateToUnpinnedTab";
 import restoreTabs from "./chrome/tabs/restoreTabs";
+import toggleAdjacentTabSelection from "./chrome/tabs/toggleAdjacentTabSelection"
 import StashEntrySource from "./data/source/StashEntrySource";
 
 const stashEntrySource = StashEntrySource();
@@ -31,21 +32,6 @@ chrome.runtime.onConnect.addListener(({ name, onMessage }) => {
       else if (message.type == MESSAGE_ADJ_TAB_SELECTION) toggleAdjacentTabSelection(message.offset)
     });
 });
-
-function toggleAdjacentTabSelection(offset) {
-  console.debug(offset)
-  chrome.tabs.query({currentWindow: true}, tabs => {
-    const tabCount = tabs.length
-    const currentTab = tabs.find(tab => tab.active)
-    const targetTab = tabs[(tabCount + currentTab.index + offset) % tabCount]
-    console.debug(targetTab.highlighted)
-    console.debug((currentTab.index + offset) % tabCount)
-    if (targetTab.highlighted)
-      chrome.tabs.update(currentTab.id, { highlighted: false })
-    else
-      chrome.tabs.update(targetTab.id, { highlighted: true })
-  })
-}
 
 function popTabs(stashKey) {
   chrome.storage.sync.get({ [stashKey]: {} }, items => {
