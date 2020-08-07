@@ -6,13 +6,15 @@ import {
   MESSAGE_MOVE,
   MESSAGE_DUPLICATE,
   MESSAGE_NAVIGATE_UNPINNED,
-  MESSAGE_STASH
+  MESSAGE_STASH,
+  MESSAGE_ADJ_TAB_SELECTION
 } from "./util/constants";
 import detachTabs from "./chrome/tabs/detachTabs";
 import moveTabs from "./chrome/tabs/moveTabs";
 import duplicateCurrentTab from "./chrome/tabs/duplicateCurrentTab";
 import navigateToUnpinnedTab from "./chrome/tabs/navigateToUnpinnedTab";
 import restoreTabs from "./chrome/tabs/restoreTabs";
+import toggleAdjacentTabSelection from "./chrome/tabs/toggleAdjacentTabSelection"
 import StashEntrySource from "./data/source/StashEntrySource";
 
 const stashEntrySource = StashEntrySource();
@@ -27,6 +29,7 @@ chrome.runtime.onConnect.addListener(({ name, onMessage }) => {
         navigateToUnpinnedTab(message.offset);
       else if (message.type == MESSAGE_STASH) stashTabs();
       else if (message.type == MESSAGE_STASH_POP) popTabs(message.stashKey);
+      else if (message.type == MESSAGE_ADJ_TAB_SELECTION) toggleAdjacentTabSelection(message.offset)
     });
 });
 

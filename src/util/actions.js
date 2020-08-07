@@ -4,9 +4,9 @@ import {
   MESSAGE_DUPLICATE,
   MESSAGE_NAVIGATE_UNPINNED,
   MESSAGE_STASH,
-  MESSAGE_STASH_POP
+  MESSAGE_STASH_POP,
+  MESSAGE_ADJ_TAB_SELECTION
 } from "./constants";
-import { func } from "prop-types";
 
 export function detachTab() {
   return {
@@ -44,5 +44,12 @@ export function popStashEntry(stashKey) {
   return {
     type: MESSAGE_STASH_POP,
     stashKey
+  }
+}
+
+export function toggleAdjacentTabSelection(offset) {
+  return {
+    type: MESSAGE_ADJ_TAB_SELECTION,
+    offset
   }
 }
