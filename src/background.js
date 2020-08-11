@@ -54,3 +54,7 @@ function stashTabs() {
     })
   });
 }
+
+chrome.runtime.onMessageExternal.addListener((actionRequest) => {
+  console.debug(actionRequest)
+})
