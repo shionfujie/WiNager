@@ -48,6 +48,10 @@ function Content() {
     else if (code == "KeyP" && ctrlKey && altKey && metaKey) openStashModal();
     else if (code == "KeyC" && ctrlKey && metaKey) copyLinkAddress();
   });
+  chrome.runtime.onMessage.addListener(({type}) => {
+    console.debug('onMessage')
+    if (type === "list stash entries") openStashModal()
+  })
   return (
     <StashModal
       isOpen={stashModalIsOpen}
