@@ -54,3 +54,30 @@ function stashTabs() {
     })
   });
 }
+
+chrome.runtime.onMessageExternal.addListener(request => {
+  console.debug(request)
+  if (request.type === "execute action") {
+    switch (request.action.name) {
+      case "detach":
+        detachTabs()
+        break
+      case "duplicate":
+        duplicateCurrentTab()
+        break;
+      case "stash":
+        stashTabs()
+        break
+      case "list stash entries":
+        requestOpenStashModal()
+        break;
+    }
+  }
+});
+
+function requestOpenStashModal() {
+  console.debug('requestOpenStashModal')
+  chrome.tabs.query({active: true, currentWindow: true}, ([tab]) => {
+    chrome.tabs.sendMessage(tab.id, {type: "list stash entries"})
+  })
+}
