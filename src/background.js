@@ -55,9 +55,33 @@ function stashTabs() {
   });
 }
 
-chrome.runtime.onMessageExternal.addListener(request => {
+const actionSpec = {
+  name: "WiNager",
+  actions: [
+    {
+      name: "list stash entries",
+      displayName: "List Stash Entries"
+    },
+    {
+      name: "detach",
+      displayName: "Detach Tabs"
+    },
+    {
+      name: "duplicate",
+      displayName: "Duplicate Current Tab"
+    },
+    {
+      name: "stash",
+      displayName: "Stash Tabs"
+    }
+  ]
+};
+
+chrome.runtime.onMessageExternal.addListener((request, _, response) => {
   console.debug(request)
-  if (request.type === "execute action") {
+  if (request.type === "action spec") {
+    response(actionSpec)
+  } else if (request.type === "execute action") {
     switch (request.action.name) {
       case "detach":
         detachTabs()
