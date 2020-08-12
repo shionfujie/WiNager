@@ -55,6 +55,23 @@ function stashTabs() {
   });
 }
 
+chrome.runtime.onMessageExternal.addListener((request, _, response) => {
+  console.debug(request)
+  if (request.type === "action spec") {
+    response({
+      name: actionSpec.name,
+      actions: Object.entries(actionSpec.actions)
+        .map(([name, {displayName}]) => {
+          return {name, displayName}
+        })
+    })
+  } else if (request.type === "execute action") {
+    const action = actionSpec.actions[request.action.name]
+    if (action !== undefined)
+      action.f()
+  }
+});
+
 const actionSpec = {
   name: "WiNager",
   actions: {
@@ -76,23 +93,6 @@ const actionSpec = {
     }
   }
 };
-
-chrome.runtime.onMessageExternal.addListener((request, _, response) => {
-  console.debug(request)
-  if (request.type === "action spec") {
-    response({
-      name: actionSpec.name,
-      actions: Object.entries(actionSpec.actions)
-        .map(([name, {displayName}]) => {
-          return {name, displayName}
-        })
-    })
-  } else if (request.type === "execute action") {
-    const action = actionSpec.actions[request.action.name]
-    if (action !== undefined)
-      action.f()
-  }
-});
 
 function requestOpenStashModal() {
   console.debug('requestOpenStashModal')
