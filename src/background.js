@@ -55,25 +55,44 @@ function stashTabs() {
   });
 }
 
-chrome.runtime.onMessageExternal.addListener(request => {
+chrome.runtime.onMessageExternal.addListener((request, _, response) => {
   console.debug(request)
-  if (request.type === "execute action") {
-    switch (request.action.name) {
-      case "detach":
-        detachTabs()
-        break
-      case "duplicate":
-        duplicateCurrentTab()
-        break;
-      case "stash":
-        stashTabs()
-        break
-      case "list stash entries":
-        requestOpenStashModal()
-        break;
-    }
+  if (request.type === "action spec") {
+    response({
+      name: actionSpec.name,
+      actions: Object.entries(actionSpec.actions)
+        .map(([name, {displayName}]) => {
+          return {name, displayName}
+        })
+    })
+  } else if (request.type === "execute action") {
+    const action = actionSpec.actions[request.action.name]
+    if (action !== undefined)
+      action.f()
   }
 });
+
+const actionSpec = {
+  name: "WiNager",
+  actions: {
+    "list stash entries": {
+      displayName: "List Stash Entries",
+      f: requestOpenStashModal
+    },
+    "detach" :{
+      displayName: "Detach Tabs",
+      f: detachTabs
+    },
+    "duplicate": {
+      displayName: "Duplicate Tab",
+      f: duplicateCurrentTab
+    },
+    "stash": {
+      displayName: "Stash Tabs",
+      f: stashTabs
+    }
+  }
+};
 
 function requestOpenStashModal() {
   console.debug('requestOpenStashModal')
