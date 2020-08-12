@@ -57,45 +57,40 @@ function stashTabs() {
 
 const actionSpec = {
   name: "WiNager",
-  actions: [
-    {
-      name: "list stash entries",
-      displayName: "List Stash Entries"
+  actions: {
+    "list stash entries": {
+      displayName: "List Stash Entries",
+      f: requestOpenStashModal
     },
-    {
-      name: "detach",
-      displayName: "Detach Tabs"
+    "detach" :{
+      displayName: "Detach Tabs",
+      f: detachTabs
     },
-    {
-      name: "duplicate",
-      displayName: "Duplicate Tab"
+    "duplicate": {
+      displayName: "Duplicate Tab",
+      f: duplicateCurrentTab
     },
-    {
-      name: "stash",
-      displayName: "Stash Tabs"
+    "stash": {
+      displayName: "Stash Tabs",
+      f: stashTabs
     }
-  ]
+  }
 };
 
 chrome.runtime.onMessageExternal.addListener((request, _, response) => {
   console.debug(request)
   if (request.type === "action spec") {
-    response(actionSpec)
+    response({
+      name: actionSpec.name,
+      actions: Object.entries(actionSpec.actions)
+        .map(([name, {displayName}]) => {
+          return {name, displayName}
+        })
+    })
   } else if (request.type === "execute action") {
-    switch (request.action.name) {
-      case "detach":
-        detachTabs()
-        break
-      case "duplicate":
-        duplicateCurrentTab()
-        break;
-      case "stash":
-        stashTabs()
-        break
-      case "list stash entries":
-        requestOpenStashModal()
-        break;
-    }
+    const action = actionSpec.actions[request.action.name]
+    if (action !== undefined)
+      action.f()
   }
 });
 
