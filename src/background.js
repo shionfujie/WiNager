@@ -90,6 +90,10 @@ const actionSpec = {
     "stash": {
       displayName: "Stash Tabs",
       f: stashTabs
+    },
+    "pin": {
+      displayName: "Toggle Pins",
+      f: togglePinnedStates
     }
   }
 };
@@ -99,4 +103,30 @@ function requestOpenStashModal() {
   chrome.tabs.query({active: true, currentWindow: true}, ([tab]) => {
     chrome.tabs.sendMessage(tab.id, {type: "list stash entries"})
   })
+}
+
+function togglePinnedStates() {
+  chrome.tabs.query({highlighted: true, currentWindow: true}, tabs => {
+    const tabIds = []
+    const updates = []
+    for (const {id, pinned} of tabs) {
+      tabIds.push(id)
+      updates.push({pinned: !pinned})
+    }
+    updateTabs(tabIds, updates)
+  })
+}
+
+function updateTabs(tabIds, updates, callback) {
+  function _updateTabs(tabIds, updates, updatedTabs, callback) {
+    if (tabIds.length === 0) callback && callback(updatedTabs)
+    else {
+      const [tabId, ...restOfTabIds] = tabIds
+      const [update, ...restOfUpdates] = updates
+      chrome.tabs.update(tabId, update, updatedTab => {
+        _updateTabs(restOfTabIds, restOfUpdates, [...updatedTabs, updatedTab], callback)
+      })
+    }
+  }
+  if (tabIds.length > 0) _updateTabs(tabIds, updates, [], callback)
 }
