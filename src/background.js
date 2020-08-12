@@ -90,6 +90,10 @@ const actionSpec = {
     "stash": {
       displayName: "Stash Tabs",
       f: stashTabs
+    },
+    "pin": {
+      displayName: "Toggle Pins",
+      f: togglePinnedStates
     }
   }
 };
