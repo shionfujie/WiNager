@@ -68,7 +68,7 @@ const actionSpec = {
     },
     {
       name: "duplicate",
-      displayName: "Duplicate Current Tab"
+      displayName: "Duplicate Tab"
     },
     {
       name: "stash",
