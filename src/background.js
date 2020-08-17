@@ -14,6 +14,7 @@ import moveTabs from "./chrome/tabs/moveTabs";
 import duplicateCurrentTab from "./chrome/tabs/duplicateCurrentTab";
 import navigateToUnpinnedTab from "./chrome/tabs/navigateToUnpinnedTab";
 import restoreTabs from "./chrome/tabs/restoreTabs";
+import reloadTabs from "./chrome/tabs/reloadTabs";
 import toggleAdjacentTabSelection from "./chrome/tabs/toggleAdjacentTabSelection"
 import StashEntrySource from "./data/source/StashEntrySource";
 
@@ -139,17 +140,4 @@ function updateTabs(tabIds, updates, callback) {
     }
   }
   if (tabIds.length > 0) _updateTabs(tabIds, updates, [], callback)
-}
-
-function reloadTabs(tabIds, callback) {
-  function _reloadTabs(tabIds, callback) {
-    if (tabIds.length === 0) callback && callback()
-    else {
-      const [tabId, ...restOfTabIds] = tabIds
-      chrome.tabs.reload(tabId, () => {
-        _reloadTabs(restOfTabIds, callback)
-      })
-    }
-  }
-  if (tabIds.length > 0) _reloadTabs(tabIds, callback)
 }
