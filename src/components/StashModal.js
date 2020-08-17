@@ -83,7 +83,7 @@ function Modal({ isOpen, onRequestClose, children }) {
           zIndex: 100000
         },
         content: {
-          top: 8,
+          top: 0,
           right: null,
           left: null,
           bottom: null,
