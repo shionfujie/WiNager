@@ -83,7 +83,7 @@ function Modal({ isOpen, onRequestClose, children }) {
           right: 8,
           left: null,
           bottom: null,
-          width: 480,
+          width: 600,
           height: "75%",
           border: 0,
           borderRadius: 2,
