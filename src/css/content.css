@@ -41,8 +41,16 @@
     font-size: 26px;
 }
 
+.line-height-small {
+    line-height: 18px;
+}
+
 .line-height-medium {
     line-height: 20px;
+}
+
+.line-height-larger {
+    line-height: 24px;
 }
 
 .line-height-huge {
@@ -83,6 +91,11 @@
     padding-right: 24px;
 }
 
+.padding-vertical-tiny {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
 .padding-vertical-smaller {
     padding-top: 8px;
     padding-bottom: 8px;
@@ -114,6 +127,10 @@
     padding-top: 8px;
 }
 
+.padding-top-small {
+    padding-top: 12px;
+}
+
 .padding-top-medium {
     padding-top: 16px;
 }
@@ -139,11 +156,15 @@
 }
 
 .padding-right-tiny {
-    padding-left: 4px;
+    padding-right: 4px;
 }
 
 .padding-bottom-smaller {
     padding-bottom: 8px;
+}
+
+.padding-bottom-small {
+    padding-bottom: 12px;
 }
 
 .padding-bottom-medium {
@@ -282,4 +303,13 @@
 
 .underline-on-hover:hover {
     text-decoration: underline;
+}
+
+.underline-primary {
+    text-decoration-line: underline;
+    text-decoration-color: #1a73e8;
+}
+
+.underline-primary:hover {
+    color: #1a73e8 !important;
 }

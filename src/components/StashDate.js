@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import hasSameDate from "../util/dates/hasSameDate";
 
 const daysOfWeek = [
@@ -38,12 +38,8 @@ export default function StashDate({ fullYear, month, date, day }) {
     else return `${commonPart}, ${fullYear}`;
   }
   return (
-    <div className={"flexbox flexbox-justify-center"}>
-      <div
-        className={
-          "shade-087 font-size-huge font-weight-bold line-height-huge padding-top-extra-larger"
-        }
-      >
+    <div className="flexbox flexbox-justify-center">
+      <div className="shade-087 font-size-huge font-weight-bold line-height-huge padding-top-extra-larger">
         {displayDate(fullYear, month, date, day)}
       </div>
     </div>
