@@ -75,16 +75,21 @@ function Modal({ isOpen, onRequestClose, children }) {
       onRequestClose={onRequestClose}
       style={{
         overlay: {
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "flex-start",
+          justifyContent: "center",
           backgroundColor: "rgba(255, 255, 255, .0)",
           zIndex: 100000
         },
         content: {
           top: 8,
-          right: 8,
+          right: null,
           left: null,
           bottom: null,
           width: 600,
           height: "75%",
+          flexGrow: 1,
           border: 0,
           borderRadius: 2,
           boxShadow:
