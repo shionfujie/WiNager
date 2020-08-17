@@ -94,6 +94,10 @@ const actionSpec = {
     "pin": {
       displayName: "Toggle Pins",
       f: togglePinnedStates
+    },
+    "reload": {
+      displayName: "Reload All Tabs",
+      f: reloadAllTabs
     }
   }
 };
