@@ -87,6 +87,11 @@
     padding-right: 24px;
 }
 
+.padding-vertical-tiny {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
 .padding-vertical-smaller {
     padding-top: 8px;
     padding-bottom: 8px;
