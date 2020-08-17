@@ -123,6 +123,10 @@
     padding-top: 8px;
 }
 
+.padding-top-small {
+    padding-top: 12px;
+}
+
 .padding-top-medium {
     padding-top: 16px;
 }
@@ -153,6 +157,10 @@
 
 .padding-bottom-smaller {
     padding-bottom: 8px;
+}
+
+.padding-bottom-small {
+    padding-bottom: 12px;
 }
 
 .padding-bottom-medium {
