@@ -49,6 +49,10 @@
     line-height: 20px;
 }
 
+.line-height-larger {
+    line-height: 24px;
+}
+
 .line-height-huge {
     line-height: 30px;
 }

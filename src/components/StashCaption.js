@@ -11,10 +11,10 @@ export default function StashCaption({ hours, minutes, count }) {
   }
   return (
     <div className="padding-vertical-medium">
-      <div className="shade-087 font-size-larger font-weight-bold line-height-medium">
+      <div className="shade-087 font-size-larger font-weight-bold line-height-larger">
         {displayTime(hours, minutes)}
       </div>
-      <div className="shade-056 font-size-small font-weight-medium line-height-medium">
+      <div className="shade-056 font-size-small font-weight-medium line-height-small">
         {count} items
       </div>
     </div>
