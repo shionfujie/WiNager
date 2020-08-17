@@ -14,6 +14,7 @@ import moveTabs from "./chrome/tabs/moveTabs";
 import duplicateCurrentTab from "./chrome/tabs/duplicateCurrentTab";
 import navigateToUnpinnedTab from "./chrome/tabs/navigateToUnpinnedTab";
 import restoreTabs from "./chrome/tabs/restoreTabs";
+import reloadTabs from "./chrome/tabs/reloadTabs";
 import toggleAdjacentTabSelection from "./chrome/tabs/toggleAdjacentTabSelection"
 import StashEntrySource from "./data/source/StashEntrySource";
 
@@ -94,6 +95,10 @@ const actionSpec = {
     "pin": {
       displayName: "Toggle Pins",
       f: togglePinnedStates
+    },
+    "reload": {
+      displayName: "Reload All Tabs",
+      f: reloadAllTabs
     }
   }
 };
@@ -114,6 +119,12 @@ function togglePinnedStates() {
       updates.push({pinned: !pinned})
     }
     updateTabs(tabIds, updates)
+  })
+}
+
+function reloadAllTabs() {
+  chrome.tabs.query({currentWindow: true}, tabs => {
+    reloadTabs(tabs.map(({id}) => id))
   })
 }
 
