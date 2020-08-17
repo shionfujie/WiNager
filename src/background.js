@@ -117,6 +117,12 @@ function togglePinnedStates() {
   })
 }
 
+function reloadAllTabs() {
+  chrome.tabs.query({currentWindow: true}, tabs => {
+    reloadTabs(tabs.map(({id}) => id))
+  })
+}
+
 function updateTabs(tabIds, updates, callback) {
   function _updateTabs(tabIds, updates, updatedTabs, callback) {
     if (tabIds.length === 0) callback && callback(updatedTabs)
