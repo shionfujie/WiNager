@@ -6,7 +6,7 @@ import RestoreButton from "./RestoreButton"
 export default function StashEntries({ stashKey, hours, minutes, entries, onRequestRestore }) {
   const count = entries.length;
   return (
-    <div className={"padding-top-smaller padding-bottom-medium"}>
+    <div className="padding-top-smaller padding-bottom-medium">
       <StashCaption hours={hours} minutes={minutes} count={count} />
       {entries.map(({ title, url }, idx) => {
         console.debug("[%s] %s", `${stashKey}-${idx}`, title);
