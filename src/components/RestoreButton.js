@@ -5,7 +5,7 @@ export default function RestoreButton({ count, onClick }) {
     <div class="inline-block padding-top-larger padding-bottom-small">
       <div
         onClick={onClick}
-        class="pointer underline-on-hover font-size-small font-weight-bold line-height-small winager-primary"
+        class="pointer underline-on-hover font-size-medium font-weight-medium line-height-medium winager-primary"
       >
         Restore all {count} items
       </div>
