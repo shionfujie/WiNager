@@ -58,6 +58,7 @@ function Content() {
       onRequestClose={closeStashModal}
       onRequestRestore={stashKey => {
         if (port != null) port.postMessage(popStashEntry(stashKey));
+        closeStashModal()
       }}
     />
   );
