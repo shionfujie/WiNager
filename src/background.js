@@ -177,5 +177,10 @@ function queryActiveTab(callback) {
 }
 
 function clearSelection() {
-  console.debug("clear selection")
+  chrome.tabs.query({highlighted: true, active: false, currentWindow: true}, tabs => {
+    updateTabs(
+      tabs.map(({id}) => id), 
+      new Array(tabs.length).fill({highlighted: false})
+    )
+  })
 }
