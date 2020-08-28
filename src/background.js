@@ -99,6 +99,10 @@ const actionSpec = {
     "reload": {
       displayName: "Reload All Tabs",
       f: reloadAllTabs
+    },
+    "select all": {
+      displayName: "Select All Tabs",
+      f: selectAllTabs
     }
   }
 };
@@ -140,4 +144,30 @@ function updateTabs(tabIds, updates, callback) {
     }
   }
   if (tabIds.length > 0) _updateTabs(tabIds, updates, [], callback)
+}
+
+function selectAllTabs() {
+  queryActiveTab(activeTab => {
+    chrome.tabs.query({highlighted: false, currentWindow: true}, tabs => {
+      if (tabs.length === 0) return
+      updateTabs(
+        tabs.map(({id}) => id),
+        new Array(tabs.length).fill({highlighted: true}),
+        () => _restoreActiveState(activeTab)
+      )
+    })
+  })
+  function _restoreActiveState(tab) {
+    // Little hack to obtain again the active state of which the active tab 
+    // at the moment of performing the action is deprived.
+    _toggleHighlightedState(tab, 
+      tab => _toggleHighlightedState(tab))
+  }
+  function _toggleHighlightedState(tab, callback) {
+    chrome.tabs.update(tab.id, {highlighted: !tab.highlighted}, tab => callback && callback(tab))
+  }
+}
+
+function queryActiveTab(callback) {
+  chrome.tabs.query({active: true, currentWindow: true}, ([tab]) => callback && callback(tab))
 }
