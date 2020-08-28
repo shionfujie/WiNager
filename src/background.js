@@ -147,5 +147,10 @@ function updateTabs(tabIds, updates, callback) {
 }
 
 function selectAllTabs() {
-  console.debug('select all tabs')
+  chrome.tabs.query({active:false, currentWindow: true}, tabs => {
+    updateTabs(
+      tabs.map(({id}) => id),
+      new Array(tabs.length).fill({highlighted: true})
+    )
+  })
 }
