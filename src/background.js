@@ -103,6 +103,10 @@ const actionSpec = {
     "select all": {
       displayName: "Select All Tabs",
       f: selectAllTabs
+    },
+    "clear selection": {
+      displayName: "Clear Tab Selection",
+      f: clearSelection
     }
   }
 };
@@ -170,4 +174,8 @@ function selectAllTabs() {
 
 function queryActiveTab(callback) {
   chrome.tabs.query({active: true, currentWindow: true}, ([tab]) => callback && callback(tab))
+}
+
+function clearSelection() {
+  console.debug("clear selection")
 }
