@@ -99,6 +99,10 @@ const actionSpec = {
     "reload": {
       displayName: "Reload All Tabs",
       f: reloadAllTabs
+    },
+    "select all": {
+      displayName: "Select All Tabs",
+      f: selectAllTabs
     }
   }
 };
@@ -140,4 +144,8 @@ function updateTabs(tabIds, updates, callback) {
     }
   }
   if (tabIds.length > 0) _updateTabs(tabIds, updates, [], callback)
+}
+
+function selectAllTabs() {
+  console.debug('select all tabs')
 }
