@@ -39,7 +39,7 @@ export default function StashDate({ fullYear, month, date, day }) {
   }
   return (
     <div className="flexbox flexbox-justify-center">
-      <div className="shade-087 font-size-huge font-weight-bold line-height-huge padding-top-extra-larger">
+      <div className="shade-087 font-size-huge font-weight-bold line-height-huge padding-top-extra-large">
         {displayDate(fullYear, month, date, day)}
       </div>
     </div>
