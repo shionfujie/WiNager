@@ -23,33 +23,17 @@ import copyLinkAddress from "./usecases/content/copyLinkAddress";
 function Content() {
   const port = usePort(PORT_NAME_DEFAULT);
   const [stashModalIsOpen, openStashModal, closeStashModal] = useSwitch();
-  useDocumentKeydown(({ code, shiftKey, ctrlKey, altKey, metaKey }) => {
-    console.debug(code)
+  useDocumentKeydown(event => {
+    const {code, ctrlKey, altKey, metaKey} = event 
     if (port === null) return;
-    if (code == "ArrowDown" && shiftKey && ctrlKey) {
-      port.postMessage(detachTab());
-    } else if (
-      (code == "BracketRight" || code == "BracketLeft") &&
-      ctrlKey &&
-      altKey &&
-      metaKey
-    ) {
-      port.postMessage(moveTab(code == "BracketRight" ? 1 : -1));
-    } else if (code == "KeyD" && altKey) port.postMessage(duplicate());
-    else if (code.startsWith("Digit") && ctrlKey && altKey && metaKey)
-      port.postMessage(navigateUnpinned(parseInt(code[5]) - 1));
-    else if (code == "KeyS" && ctrlKey && altKey && metaKey)
-      port.postMessage(stash());
-    else if (
-      (code == "BracketRight" || code == "BracketLeft") &&
-      ctrlKey &&
-      metaKey
-    ) port.postMessage(toggleAdjacentTabSelection(code == "BracketRight" ? 1 : -1))
-    else if (code == "KeyP" && ctrlKey && altKey && metaKey) openStashModal();
+
+    if (code == "KeyP" && ctrlKey && altKey && metaKey) openStashModal();
     else if (code == "KeyC" && ctrlKey && metaKey) copyLinkAddress();
-  });
+
+    const action = mapEventToAction(event)
+    if (action !== null) port.postMessage(mapEventToAction(event))
+  })
   chrome.runtime.onMessage.addListener(({type}) => {
-    console.debug('onMessage')
     if (type === "list stash entries") openStashModal()
   })
   return (
@@ -62,6 +46,33 @@ function Content() {
       }}
     />
   );
+}
+
+function mapEventToAction({ code, shiftKey, ctrlKey, altKey, metaKey }) {
+  if (code == "ArrowDown" && shiftKey && ctrlKey) {
+    return detachTab();
+  } else if (
+    (code == "BracketRight" || code == "BracketLeft") &&
+    ctrlKey &&
+    !altKey &&
+    metaKey
+  ) {
+    return moveTab(code == "BracketRight" ? 1 : -1);
+  } else if (code == "KeyD" && altKey) {
+    return duplicate();
+  } else if (code.startsWith("Digit") && ctrlKey && altKey && metaKey) {
+    return navigateUnpinned(parseInt(code[5]) - 1);
+  } else if (code == "KeyS" && ctrlKey && altKey && metaKey) {
+    return stash();
+  } else if (
+    (code == "BracketRight" || code == "BracketLeft") &&
+    ctrlKey &&
+    altKey &&
+    metaKey
+  ) {
+    return toggleAdjacentTabSelection(code == "BracketRight" ? 1 : -1);
+  }
+  return null;
 }
 
 const app = document.createElement("div");
