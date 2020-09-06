@@ -54,7 +54,7 @@ function mapEventToAction({ code, shiftKey, ctrlKey, altKey, metaKey }) {
   } else if (
     (code == "BracketRight" || code == "BracketLeft") &&
     ctrlKey &&
-    altKey &&
+    !altKey &&
     metaKey
   ) {
     return moveTab(code == "BracketRight" ? 1 : -1);
@@ -67,6 +67,7 @@ function mapEventToAction({ code, shiftKey, ctrlKey, altKey, metaKey }) {
   } else if (
     (code == "BracketRight" || code == "BracketLeft") &&
     ctrlKey &&
+    altKey &&
     metaKey
   ) {
     return toggleAdjacentTabSelection(code == "BracketRight" ? 1 : -1);
