@@ -107,6 +107,10 @@ const actionSpec = {
     "clear selection": {
       displayName: "Clear Tab Selection",
       f: clearSelection
+    },
+    "reopen in incognito mode": {
+      displayName: "Reopen in Incognito Mode",
+      f: reopenInIncognitoMode
     }
   }
 };
@@ -182,5 +186,18 @@ function clearSelection() {
       tabs.map(({id}) => id), 
       new Array(tabs.length).fill({highlighted: false})
     )
+  })
+}
+
+function reopenInIncognitoMode() {
+  chrome.tabs.query({highlighted: true, currentWindow: true}, tabs => {
+    const urls = []
+    const ids = []
+    for (const {id, url} of tabs) {
+      urls.push(url)
+      ids.push(id)
+    }
+    chrome.windows.create({incognito: true, url: urls})
+    chrome.tabs.remove(ids)
   })
 }
