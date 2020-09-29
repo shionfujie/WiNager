@@ -107,6 +107,10 @@ const actionSpec = {
     "clear selection": {
       displayName: "Clear Tab Selection",
       f: clearSelection
+    },
+    "reopen in incognito mode": {
+      displayName: "Reopen in Incognito Mode",
+      f: reopenInIncognitoMode
     }
   }
 };
@@ -183,4 +187,8 @@ function clearSelection() {
       new Array(tabs.length).fill({highlighted: false})
     )
   })
+}
+
+function reopenInIncognitoMode() {
+  console.log('reopen')
 }
