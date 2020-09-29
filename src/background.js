@@ -190,5 +190,14 @@ function clearSelection() {
 }
 
 function reopenInIncognitoMode() {
-  console.log('reopen')
+  chrome.tabs.query({highlighted: true, currentWindow: true}, tabs => {
+    const urls = []
+    const ids = []
+    for (const {id, url} of tabs) {
+      urls.push(url)
+      ids.push(id)
+    }
+    chrome.windows.create({incognito: true, url: urls})
+    chrome.tabs.remove(ids)
+  })
 }
