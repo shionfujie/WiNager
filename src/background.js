@@ -196,6 +196,7 @@ function reopenInIncognitoMode() {
     for (const {id, url} of tabs) {
       urls.push(url)
       ids.push(id)
+      chrome.history.deleteUrl({url})
     }
     chrome.windows.create({incognito: true, url: urls})
     chrome.tabs.remove(ids)
