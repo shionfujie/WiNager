@@ -1,7 +1,7 @@
 {
   "name": "WiNager",
   "description": "Window transition manager for Chrome",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "manifest_version": 2,
   "icons": {
     "16": "./get_started16.png",
@@ -9,7 +9,7 @@
     "48": "./get_started48.png",
     "128": "./get_started128.png"
   },
-  "permissions": ["tabs", "storage"],
+  "permissions": ["tabs", "storage", "history"],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
