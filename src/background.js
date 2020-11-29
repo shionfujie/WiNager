@@ -46,9 +46,9 @@ function stashTabs() {
   chrome.tabs.query({ highlighted: true, currentWindow: true }, tabs => {
     const ids = []
     const entries = []
-    for (const {id, title, url} of tabs) {
+    for (const { id, title, url } of tabs) {
       ids.push(id)
-      entries.push({title, url})
+      entries.push({ title, url })
     }
     chrome.tabs.remove(ids, () => {
       stashEntrySource.addStashEntries(entries);
@@ -62,8 +62,8 @@ chrome.runtime.onMessageExternal.addListener((request, _, response) => {
     response({
       name: actionSpec.name,
       actions: Object.entries(actionSpec.actions)
-        .map(([name, {displayName}]) => {
-          return {name, displayName}
+        .map(([name, { displayName }]) => {
+          return { name, displayName }
         })
     })
   } else if (request.type === "execute action") {
@@ -80,7 +80,7 @@ const actionSpec = {
       displayName: "List Stash Entries",
       f: requestOpenStashModal
     },
-    "detach" :{
+    "detach": {
       displayName: "Detach Tabs",
       f: detachTabs
     },
@@ -117,26 +117,26 @@ const actionSpec = {
 
 function requestOpenStashModal() {
   console.debug('requestOpenStashModal')
-  chrome.tabs.query({active: true, currentWindow: true}, ([tab]) => {
-    chrome.tabs.sendMessage(tab.id, {type: "list stash entries"})
+  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+    chrome.tabs.sendMessage(tab.id, { type: "list stash entries" })
   })
 }
 
 function togglePinnedStates() {
-  chrome.tabs.query({highlighted: true, currentWindow: true}, tabs => {
+  chrome.tabs.query({ highlighted: true, currentWindow: true }, tabs => {
     const tabIds = []
     const updates = []
-    for (const {id, pinned} of tabs) {
+    for (const { id, pinned } of tabs) {
       tabIds.push(id)
-      updates.push({pinned: !pinned})
+      updates.push({ pinned: !pinned })
     }
     updateTabs(tabIds, updates)
   })
 }
 
 function reloadAllTabs() {
-  chrome.tabs.query({currentWindow: true}, tabs => {
-    reloadTabs(tabs.map(({id}) => id))
+  chrome.tabs.query({ currentWindow: true }, tabs => {
+    reloadTabs(tabs.map(({ id }) => id))
   })
 }
 
@@ -156,11 +156,11 @@ function updateTabs(tabIds, updates, callback) {
 
 function selectAllTabs() {
   queryActiveTab(activeTab => {
-    chrome.tabs.query({highlighted: false, currentWindow: true}, tabs => {
+    chrome.tabs.query({ highlighted: false, currentWindow: true }, tabs => {
       if (tabs.length === 0) return
       updateTabs(
-        tabs.map(({id}) => id),
-        new Array(tabs.length).fill({highlighted: true}),
+        tabs.map(({ id }) => id),
+        new Array(tabs.length).fill({ highlighted: true }),
         () => _restoreActiveState(activeTab)
       )
     })
@@ -168,37 +168,37 @@ function selectAllTabs() {
   function _restoreActiveState(tab) {
     // Little hack to obtain again the active state of which the active tab 
     // at the moment of performing the action is deprived.
-    _toggleHighlightedState(tab, 
+    _toggleHighlightedState(tab,
       tab => _toggleHighlightedState(tab))
   }
   function _toggleHighlightedState(tab, callback) {
-    chrome.tabs.update(tab.id, {highlighted: !tab.highlighted}, tab => callback && callback(tab))
+    chrome.tabs.update(tab.id, { highlighted: !tab.highlighted }, tab => callback && callback(tab))
   }
 }
 
 function queryActiveTab(callback) {
-  chrome.tabs.query({active: true, currentWindow: true}, ([tab]) => callback && callback(tab))
+  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => callback && callback(tab))
 }
 
 function clearSelection() {
-  chrome.tabs.query({highlighted: true, active: false, currentWindow: true}, tabs => {
+  chrome.tabs.query({ highlighted: true, active: false, currentWindow: true }, tabs => {
     updateTabs(
-      tabs.map(({id}) => id), 
-      new Array(tabs.length).fill({highlighted: false})
+      tabs.map(({ id }) => id),
+      new Array(tabs.length).fill({ highlighted: false })
     )
   })
 }
 
 function reopenInIncognitoMode() {
-  chrome.tabs.query({highlighted: true, currentWindow: true}, tabs => {
+  chrome.tabs.query({ highlighted: true, currentWindow: true }, tabs => {
     const urls = []
     const ids = []
-    for (const {id, url} of tabs) {
+    for (const { id, url } of tabs) {
       urls.push(url)
       ids.push(id)
-      chrome.history.deleteUrl({url})
+      chrome.history.deleteUrl({ url })
     }
-    chrome.windows.create({incognito: true, url: urls})
+    chrome.windows.create({ incognito: true, url: urls })
     chrome.tabs.remove(ids)
   })
 }
