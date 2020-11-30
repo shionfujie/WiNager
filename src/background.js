@@ -209,13 +209,18 @@ function reopenInIncognitoMode() {
 
 function moveActiveTabTo() {
   console.debug("moving active tab (UD)")
+  getTabActivity(tabActivity => {
+    console.debug(tabActivity)
+  })
 }
 
 var TabActivity = undefined // An in-memory cache of the activity to prevent phantom read
 
 chrome.runtime.onInstalled.addListener(() => {
-  // // The following code is for development to clear up the activity
-  // chrome.storage.sync.remove("tabActivity")
+  // The following code is for development to clear up the activity
+  // chrome.storage.sync.remove("tabActivity", () => {
+  //   TabActivity = {}
+  // })
   chrome.storage.sync.get({ tabActivity: {} }, ({ tabActivity }) => {
     console.debug("Installing tab activity")
     console.debug(tabActivity)
@@ -248,3 +253,31 @@ chrome.tabs.onRemoved.addListener(tabId => {
   chrome.storage.sync.set({ tabActivity: TabActivity })
   console.debug(TabActivity)
 })
+
+function getTabActivity(callback) {
+  console.debug("Retrieving tab activity")
+  chrome.storage.sync.get({ tabActivity: {} }, ({ tabActivity }) => {
+    const activityHistoryRaw = Object.entries(tabActivity).sort(([_, timestamp], [_1, timestamp1]) =>
+      timestamp1 - timestamp)
+    console.debug(activityHistoryRaw)
+    getTabs(activityHistoryRaw.map(([id, _]) => parseInt(id)), tabs => {
+      const tabHistory = tabs.map((tab, i) => {
+        const [id, timestamp] = activityHistoryRaw[i]
+        return {id, timestamp, title: tab.title, hostname: new URL(tab.url).hostname}
+      })
+      callback(tabHistory)
+    })
+  })
+}
+
+function getTabs(ids, callback) {
+  function $getTabs(ids, tabs, callback) {
+    if (ids.length === 0) {
+      callback(tabs) 
+      return
+    }
+    const [head, ...tail] = ids
+    chrome.tabs.get(head, tab => $getTabs(tail, [tab, ...tabs], callback))
+  }
+  $getTabs(ids, [], callback)
+}
