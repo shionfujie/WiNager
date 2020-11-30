@@ -210,3 +210,19 @@ function reopenInIncognitoMode() {
 function moveActiveTabTo() {
   console.debug("moving active tab (UD)")
 }
+
+chrome.tabs.onActivated.addListener(activeInfo => {
+  console.debug('Recording tab activity')
+  console.debug(activeInfo.tabId)
+  chrome.storage.sync.get({"tabActivity": {}}, ({tabActivity}) => {
+    console.debug('Updating tab activity')
+    console.debug(tabActivity)
+    tabActivity[activeInfo.tabId] = Date.now()
+    chrome.storage.sync.set({tabActivity})
+  })
+})
+
+chrome.tabs.onRemoved.addListener(tabId => {
+  console.debug('Clearing up tab entry')
+  console.debug(tabId)
+})
