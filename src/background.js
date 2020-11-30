@@ -213,30 +213,38 @@ function moveActiveTabTo() {
 
 var TabActivity = undefined // An in-memory cache of the activity to prevent phantom read
 
+chrome.runtime.onInstalled.addListener(() => {
+  // // The following code is for development to clear up the activity
+  // chrome.storage.sync.remove("tabActivity")
+  chrome.storage.sync.get({ tabActivity: {} }, ({ tabActivity }) => {
+    console.debug("Installing tab activity")
+    console.debug(tabActivity)
+    TabActivity = tabActivity
+  })
+})
+
 chrome.tabs.onActivated.addListener(activeInfo => {
   console.debug('Recording tab activity')
   const now = Date.now()
   console.debug(activeInfo.tabId, now)
-  chrome.storage.sync.get({tabActivity: {}}, ({tabActivity}) => {
-    console.debug('Updating tab activity')
-    if (!TabActivity) {
-      TabActivity = tabActivity
-    }
-    TabActivity[activeInfo.tabId] = now
-    console.debug(TabActivity)
-    chrome.storage.sync.set({tabActivity: TabActivity})
-  })
+  console.debug('Updating tab activity')
+  if (!TabActivity) {
+    console.error("In-memory cache of the tab activity expected to be initialized")
+    return
+  }
+  TabActivity[activeInfo.tabId] = now
+  console.debug(TabActivity)
+  chrome.storage.sync.set({ tabActivity: TabActivity })
 })
 
 chrome.tabs.onRemoved.addListener(tabId => {
-  chrome.storage.sync.get({tabActivity: {}}, ({tabActivity}) => {
-    console.debug('Clearing up tab entry')
-    console.debug(tabId)
-    if (!TabActivity) {
-      TabActivity = tabActivity
-    }
-    delete TabActivity[tabId]
-    chrome.storage.sync.set({tabActivity: TabActivity})
-    console.debug(TabActivity)
-  })
+  console.debug('Clearing up tab entry')
+  console.debug(tabId)
+  if (!TabActivity) {
+    console.error("In-memory cache of the tab activity expected to be initialized")
+    return
+  }
+  delete TabActivity[tabId]
+  chrome.storage.sync.set({ tabActivity: TabActivity })
+  console.debug(TabActivity)
 })
