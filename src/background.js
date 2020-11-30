@@ -111,6 +111,10 @@ const actionSpec = {
     "reopen in incognito mode": {
       displayName: "Reopen in Incognito Mode",
       f: reopenInIncognitoMode
+    },
+    "go to": {
+      // displayName: "Move to ...",
+      f: moveActiveTabTo
     }
   }
 };
@@ -201,4 +205,8 @@ function reopenInIncognitoMode() {
     chrome.windows.create({ incognito: true, url: urls })
     chrome.tabs.remove(ids)
   })
+}
+
+function moveActiveTabTo() {
+  console.debug("moving active tab (UD)")
 }
