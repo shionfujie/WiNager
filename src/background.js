@@ -211,18 +211,32 @@ function moveActiveTabTo() {
   console.debug("moving active tab (UD)")
 }
 
+var TabActivity = undefined // An in-memory cache of the activity to prevent phantom read
+
 chrome.tabs.onActivated.addListener(activeInfo => {
   console.debug('Recording tab activity')
-  console.debug(activeInfo.tabId)
-  chrome.storage.sync.get({"tabActivity": {}}, ({tabActivity}) => {
+  const now = Date.now()
+  console.debug(activeInfo.tabId, now)
+  chrome.storage.sync.get({tabActivity: {}}, ({tabActivity}) => {
     console.debug('Updating tab activity')
-    console.debug(tabActivity)
-    tabActivity[activeInfo.tabId] = Date.now()
-    chrome.storage.sync.set({tabActivity})
+    if (!TabActivity) {
+      TabActivity = tabActivity
+    }
+    TabActivity[activeInfo.tabId] = now
+    console.debug(TabActivity)
+    chrome.storage.sync.set({tabActivity: TabActivity})
   })
 })
 
 chrome.tabs.onRemoved.addListener(tabId => {
-  console.debug('Clearing up tab entry')
-  console.debug(tabId)
+  chrome.storage.sync.get({tabActivity: {}}, ({tabActivity}) => {
+    console.debug('Clearing up tab entry')
+    console.debug(tabId)
+    if (!TabActivity) {
+      TabActivity = tabActivity
+    }
+    delete TabActivity[tabId]
+    chrome.storage.sync.set({tabActivity: TabActivity})
+    console.debug(TabActivity)
+  })
 })
