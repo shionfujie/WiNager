@@ -57,7 +57,7 @@ function stashTabs() {
 }
 
 chrome.runtime.onMessageExternal.addListener((request, sender, response) => {
-  console.debug(request)
+  console.debug("request: ", request)
   switch (request.type) {
     case "action spec":
       response({
@@ -304,6 +304,10 @@ function sendSelectOptions(ctx, options) {
   });
 }
 
-function activateTab(id) {
-  chrome.tabs.update(id, {active: true})
+function activateTab(tabId) {
+  chrome.tabs.get(tabId, tab => {
+    chrome.windows.update(tab.windowId, {focused: true}, () => {
+      chrome.tabs.update(tabId, {active: true})
+    })
+  })
 }
