@@ -56,8 +56,30 @@ function stashTabs() {
   });
 }
 
-chrome.runtime.onMessageExternal.addListener((request, _, response) => {
+chrome.runtime.onMessageExternal.addListener((request, sender, response) => {
   console.debug(request)
+  switch (request.type) {
+    case "action spec":
+      response({
+        name: actionSpec.name,
+        actions: Object.entries(actionSpec.actions)
+          .map(([name, { displayName }]) => {
+            return { name, displayName }
+          })
+      })
+      break;
+    case "execute action":
+      const action = actionSpec.actions[request.action.name]
+      const ctx = { sender }
+      if (action !== undefined)
+        action.f(ctx)
+      break
+    case "select/response":
+      if (request.cancelled || request.selected === undefined) return;
+      console.log("request.selected:", request.selected);
+      activateTab(parseInt(request.selected))
+      break;
+  }
   if (request.type === "action spec") {
     response({
       name: actionSpec.name,
@@ -68,8 +90,9 @@ chrome.runtime.onMessageExternal.addListener((request, _, response) => {
     })
   } else if (request.type === "execute action") {
     const action = actionSpec.actions[request.action.name]
+    const ctx = { sender }
     if (action !== undefined)
-      action.f()
+      action.f(ctx)
   }
 });
 
@@ -113,8 +136,8 @@ const actionSpec = {
       f: reopenInIncognitoMode
     },
     "go to": {
-      // displayName: "Move to ...",
-      f: moveActiveTabTo
+      displayName: "Go to ...",
+      f: moveActiveTab
     }
   }
 };
@@ -165,6 +188,8 @@ function selectAllTabs() {
       updateTabs(
         tabs.map(({ id }) => id),
         new Array(tabs.length).fill({ highlighted: true }),
+        // TODO: The restoration of active state seems in effect identical to 
+        // activating the tab.... So, activateTab may be usable?
         () => _restoreActiveState(activeTab)
       )
     })
@@ -207,17 +232,19 @@ function reopenInIncognitoMode() {
   })
 }
 
-function moveActiveTabTo() {
+function moveActiveTab(ctx) {
   console.debug("moving active tab (UD)")
   getTabActivity(tabActivity => {
     console.debug(tabActivity)
+    const selectOptions = tabActivity.map(th => ({ value: th.id, displayName: th.title + " " + th.hostname }))
+    sendSelectOptions(ctx, selectOptions)
   })
 }
 
 var TabActivity = undefined // An in-memory cache of the activity to prevent phantom read
 
 chrome.runtime.onInstalled.addListener(() => {
-  // The following code is for development to clear up the activity
+  // // The following code is for development to clear up the activity
   // chrome.storage.sync.remove("tabActivity", () => {
   //   TabActivity = {}
   // })
@@ -260,10 +287,11 @@ function getTabActivity(callback) {
     const activityHistoryRaw = Object.entries(tabActivity).sort(([_, timestamp], [_1, timestamp1]) =>
       timestamp1 - timestamp)
     console.debug(activityHistoryRaw)
-    getTabs(activityHistoryRaw.map(([id, _]) => parseInt(id)), tabs => {
+    const tabIds = activityHistoryRaw.map(([id, _]) => parseInt(id))
+    getTabs(tabIds, tabs => {
       const tabHistory = tabs.map((tab, i) => {
         const [id, timestamp] = activityHistoryRaw[i]
-        return {id, timestamp, title: tab.title, hostname: new URL(tab.url).hostname}
+        return { id, timestamp, title: tab.title, hostname: new URL(tab.url).hostname }
       })
       callback(tabHistory)
     })
@@ -273,11 +301,22 @@ function getTabActivity(callback) {
 function getTabs(ids, callback) {
   function $getTabs(ids, tabs, callback) {
     if (ids.length === 0) {
-      callback(tabs) 
+      callback(tabs)
       return
     }
     const [head, ...tail] = ids
     chrome.tabs.get(head, tab => $getTabs(tail, [tab, ...tabs], callback))
   }
   $getTabs(ids, [], callback)
+}
+
+function sendSelectOptions(ctx, options) {
+  chrome.runtime.sendMessage(ctx.sender.id, {
+    type: "select",
+    options
+  });
+}
+
+function activateTab(id) {
+  chrome.tabs.update(id, {active: true})
 }
