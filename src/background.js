@@ -80,20 +80,6 @@ chrome.runtime.onMessageExternal.addListener((request, sender, response) => {
       activateTab(parseInt(request.selected))
       break;
   }
-  if (request.type === "action spec") {
-    response({
-      name: actionSpec.name,
-      actions: Object.entries(actionSpec.actions)
-        .map(([name, { displayName }]) => {
-          return { name, displayName }
-        })
-    })
-  } else if (request.type === "execute action") {
-    const action = actionSpec.actions[request.action.name]
-    const ctx = { sender }
-    if (action !== undefined)
-      action.f(ctx)
-  }
 });
 
 const actionSpec = {
