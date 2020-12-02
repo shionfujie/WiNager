@@ -286,9 +286,10 @@ function getTabActivity(callback) {
   chrome.storage.sync.get({ tabActivity: {} }, ({ tabActivity }) => {
     const activityHistoryRaw = Object.entries(tabActivity).sort(([_, timestamp], [_1, timestamp1]) =>
       timestamp1 - timestamp)
-    console.debug(activityHistoryRaw)
+    console.debug("Obtaining tab activity: activityHistoryRaw:", activityHistoryRaw)
     const tabIds = activityHistoryRaw.map(([id, _]) => parseInt(id))
     getTabs(tabIds, tabs => {
+      console.debug("Obtaining tab activity: tabs:", tabs)
       const tabHistory = tabs.map((tab, i) => {
         const [id, timestamp] = activityHistoryRaw[i]
         return { id, timestamp, title: tab.title, hostname: new URL(tab.url).hostname }
@@ -305,7 +306,7 @@ function getTabs(ids, callback) {
       return
     }
     const [head, ...tail] = ids
-    chrome.tabs.get(head, tab => $getTabs(tail, [tab, ...tabs], callback))
+    chrome.tabs.get(head, tab => $getTabs(tail, [...tabs, tab], callback))
   }
   $getTabs(ids, [], callback)
 }
