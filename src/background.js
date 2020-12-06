@@ -24,14 +24,29 @@ chrome.runtime.onConnect.addListener(({ name, onMessage }) => {
   if (name == PORT_NAME_DEFAULT)
     onMessage.addListener(message => {
       console.debug("Receiving message:", message)
-      if (message.type == MESSAGE_DETACH) detachTabs();
-      else if (message.type == MESSAGE_MOVE) moveTabs(message.offset);
-      else if (message.type == MESSAGE_DUPLICATE) duplicateCurrentTab();
-      else if (message.type == MESSAGE_NAVIGATE_UNPINNED)
-        navigateToUnpinnedTab(message.offset);
-      else if (message.type == MESSAGE_STASH) stashTabs();
-      else if (message.type == MESSAGE_STASH_POP) popTabs(message.stashKey);
-      else if (message.type == MESSAGE_ADJ_TAB_SELECTION) toggleAdjacentTabSelection(message.offset)
+      switch (message.type) {
+        case MESSAGE_DETACH: 
+          detachTabs();
+          break
+        case MESSAGE_MOV:
+          moveTabs(message.offset);
+          break;
+        case MESSAGE_DUPLICATE:
+          duplicateCurrentTab();
+          break;
+        case MESSAGE_NAVIGATE_UNPINNED:
+          navigateToUnpinnedTab(message.offset);
+          break;
+        case MESSAGE_STASH:
+          stashTabs();
+          break
+        case MESSAGE_STASH_POP:
+          popTabs(message.stashKey);
+          break
+        case MESSAGE_ADJ_TAB_SELECTION:
+          toggleAdjacentTabSelection(message.offset)
+          break;
+      }
     });
 });
 
