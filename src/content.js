@@ -12,7 +12,9 @@ import {
   navigateUnpinned,
   stash,
   popStashEntry,
-  toggleAdjacentTabSelection
+  toggleAdjacentTabSelection,
+  goForward,
+  goBack
 } from "./util/actions";
 import { PORT_NAME_DEFAULT } from "./util/constants";
 import usePort from "./hooks/chrome/usePort";
@@ -74,6 +76,10 @@ function mapEventToAction({ code, shiftKey, ctrlKey, altKey, metaKey }) {
       altKey &&
       metaKey:
       return toggleAdjacentTabSelection(code == "BracketRight" ? 1 : -1);
+    case (code === "BracketRight" && ctrlKey && shiftKey):
+      return goForward()
+    case (code === "BracketLeft" && ctrlKey && shiftKey):
+      return goBack()
     default:
       return null
   }

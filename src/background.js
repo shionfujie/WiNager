@@ -1,13 +1,16 @@
 /*global chrome*/
 
-import { PORT_NAME_DEFAULT, MESSAGE_STASH_POP } from "./util/constants";
 import {
   MESSAGE_DETACH,
   MESSAGE_MOVE,
   MESSAGE_DUPLICATE,
   MESSAGE_NAVIGATE_UNPINNED,
   MESSAGE_STASH,
-  MESSAGE_ADJ_TAB_SELECTION
+  MESSAGE_ADJ_TAB_SELECTION,
+  PORT_NAME_DEFAULT, 
+  MESSAGE_STASH_POP, 
+  MESSAGE_GO_FORWARD,
+  MESSAGE_GO_BACK
 } from "./util/constants";
 import detachTabs from "./chrome/tabs/detachTabs";
 import moveTabs from "./chrome/tabs/moveTabs";
@@ -23,14 +26,36 @@ const stashEntrySource = StashEntrySource();
 chrome.runtime.onConnect.addListener(({ name, onMessage }) => {
   if (name == PORT_NAME_DEFAULT)
     onMessage.addListener(message => {
-      if (message.type == MESSAGE_DETACH) detachTabs();
-      else if (message.type == MESSAGE_MOVE) moveTabs(message.offset);
-      else if (message.type == MESSAGE_DUPLICATE) duplicateCurrentTab();
-      else if (message.type == MESSAGE_NAVIGATE_UNPINNED)
-        navigateToUnpinnedTab(message.offset);
-      else if (message.type == MESSAGE_STASH) stashTabs();
-      else if (message.type == MESSAGE_STASH_POP) popTabs(message.stashKey);
-      else if (message.type == MESSAGE_ADJ_TAB_SELECTION) toggleAdjacentTabSelection(message.offset)
+      console.debug("Receiving message:", message)
+      switch (message.type) {
+        case MESSAGE_DETACH:
+          detachTabs();
+          break
+        case MESSAGE_MOVE:
+          moveTabs(message.offset);
+          break;
+        case MESSAGE_DUPLICATE:
+          duplicateCurrentTab();
+          break;
+        case MESSAGE_NAVIGATE_UNPINNED:
+          navigateToUnpinnedTab(message.offset);
+          break;
+        case MESSAGE_STASH:
+          stashTabs();
+          break
+        case MESSAGE_STASH_POP:
+          popTabs(message.stashKey);
+          break
+        case MESSAGE_ADJ_TAB_SELECTION:
+          toggleAdjacentTabSelection(message.offset)
+          break;
+        case MESSAGE_GO_FORWARD:
+          goForward()
+          break
+        case MESSAGE_GO_BACK:
+          goBack();
+          break
+      }
     });
 });
 
@@ -239,6 +264,7 @@ function getShortURLRep(urlStr) {
 }
 
 var TabActivity = undefined // An in-memory cache of the activity to prevent phantom read
+var Navigator = {back: null, forward: null, tabId: null}
 
 chrome.runtime.onInstalled.addListener(() => {
   // // The following code is for development to clear up the activity
@@ -252,18 +278,31 @@ chrome.runtime.onInstalled.addListener(() => {
   })
 })
 
-chrome.tabs.onActivated.addListener(activeInfo => {
+chrome.tabs.onActivated.addListener(({tabId}) => {
   console.debug('Recording tab activity')
   const now = Date.now()
-  console.debug(activeInfo.tabId, now)
+  console.debug(tabId, now)
   console.debug('Updating tab activity')
+
   if (!TabActivity) {
     console.error("In-memory cache of the tab activity expected to be initialized")
     return
   }
-  TabActivity[activeInfo.tabId] = now
+  TabActivity[tabId] = now
   console.debug(TabActivity)
   chrome.storage.sync.set({ tabActivity: TabActivity })
+
+  // Record a new tab activation if yet recorded
+  if (Navigator.tabId !== tabId) {
+    const nextNavigator = {
+      tabId,
+      forward: null,
+      back: Navigator
+    }
+    Navigator.forward = nextNavigator
+    Navigator = nextNavigator
+    console.debug("Navigator Updated:", Navigator)
+  }
 })
 
 chrome.tabs.onRemoved.addListener(tabId => {
@@ -322,4 +361,20 @@ function activateTab(tabId) {
       chrome.tabs.update(tabId, {active: true})
     })
   })
+}
+
+function goForward() {
+  if (Navigator.forward === null) {
+    return
+  }
+  Navigator = Navigator.forward
+  activateTab(Navigator.tabId)
+}
+
+function goBack() {
+  if (Navigator.back === null || Navigator.back.tabId === null) {
+    return
+  }
+  Navigator = Navigator.back
+  activateTab(Navigator.tabId)
 }
