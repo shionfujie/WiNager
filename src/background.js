@@ -239,6 +239,7 @@ function getShortURLRep(urlStr) {
 }
 
 var TabActivity = undefined // An in-memory cache of the activity to prevent phantom read
+var Navigator = {back: null, forward: null, tabId: null}
 
 chrome.runtime.onInstalled.addListener(() => {
   // // The following code is for development to clear up the activity
@@ -252,18 +253,30 @@ chrome.runtime.onInstalled.addListener(() => {
   })
 })
 
-chrome.tabs.onActivated.addListener(activeInfo => {
+chrome.tabs.onActivated.addListener(({tabId}) => {
   console.debug('Recording tab activity')
   const now = Date.now()
-  console.debug(activeInfo.tabId, now)
+  console.debug(tabId, now)
   console.debug('Updating tab activity')
+
   if (!TabActivity) {
     console.error("In-memory cache of the tab activity expected to be initialized")
     return
   }
-  TabActivity[activeInfo.tabId] = now
+  TabActivity[tabId] = now
   console.debug(TabActivity)
   chrome.storage.sync.set({ tabActivity: TabActivity })
+
+  if (Navigator.tabId !== tabId) {
+    const nextNavigator = {
+      tabId,
+      forward: null,
+      back: Navigator
+    }
+    Navigator.forward = nextNavigator
+    Navigator = nextNavigator
+    console.debug("Navigator Updated:", Navigator)
+  }
 })
 
 chrome.tabs.onRemoved.addListener(tabId => {
