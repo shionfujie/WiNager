@@ -300,6 +300,7 @@ function getTabs(ids, callback) {
 function sendSelectOptions(ctx, options) {
   chrome.runtime.sendMessage(ctx.sender.id, {
     type: "select",
+    hint: "Where do you want to go?",
     options
   });
 }
