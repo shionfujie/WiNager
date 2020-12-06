@@ -222,7 +222,7 @@ function moveActiveTab(ctx) {
   console.debug("moving active tab (UD)")
   getTabActivity(tabActivity => {
     console.debug(tabActivity)
-    const selectOptions = tabActivity.map(th => ({ value: th.id, displayName: th.title + " " + th.hostname }))
+    const selectOptions = tabActivity.map(th => ({ value: th.id, iconUrl: th.favIconUrl, displayName: th.title + " " + th.hostname }))
     sendSelectOptions(ctx, selectOptions)
   })
 }
@@ -278,7 +278,7 @@ function getTabActivity(callback) {
       console.debug("Obtaining tab activity: tabs:", tabs)
       const tabHistory = tabs.map((tab, i) => {
         const [id, timestamp] = activityHistoryRaw[i]
-        return { id, timestamp, title: tab.title, hostname: new URL(tab.url).hostname }
+        return { id, timestamp, title: tab.title, favIconUrl: tab.favIconUrl, hostname: new URL(tab.url).hostname }
       })
       callback(tabHistory)
     })
