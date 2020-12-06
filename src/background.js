@@ -292,6 +292,7 @@ chrome.tabs.onActivated.addListener(({tabId}) => {
   console.debug(TabActivity)
   chrome.storage.sync.set({ tabActivity: TabActivity })
 
+  // Record a new tab activation if yet recorded
   if (Navigator.tabId !== tabId) {
     const nextNavigator = {
       tabId,
