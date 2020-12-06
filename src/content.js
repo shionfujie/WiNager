@@ -49,30 +49,28 @@ function Content() {
 }
 
 function mapEventToAction({ code, shiftKey, ctrlKey, altKey, metaKey }) {
-  if (code == "ArrowDown" && shiftKey && ctrlKey) {
-    return detachTab();
-  } else if (
-    (code == "BracketRight" || code == "BracketLeft") &&
-    ctrlKey &&
-    !altKey &&
-    metaKey
-  ) {
-    return moveTab(code == "BracketRight" ? 1 : -1);
-  } else if (code == "KeyD" && altKey) {
-    return duplicate();
-  } else if (code.startsWith("Digit") && ctrlKey && altKey && metaKey) {
-    return navigateUnpinned(parseInt(code[5]) - 1);
-  } else if (code == "KeyS" && ctrlKey && altKey && metaKey) {
-    return stash();
-  } else if (
-    (code == "BracketRight" || code == "BracketLeft") &&
-    ctrlKey &&
-    altKey &&
-    metaKey
-  ) {
-    return toggleAdjacentTabSelection(code == "BracketRight" ? 1 : -1);
+  switch (true) {
+    case code == "ArrowDown" && shiftKey && ctrlKey:
+      return detachTab();
+    case (code == "BracketRight" || code == "BracketLeft") &&
+      ctrlKey &&
+      !altKey &&
+      metaKey:
+      return moveTab(code == "BracketRight" ? 1 : -1);
+    case code == "KeyD" && altKey:
+      return duplicate();
+    case code.startsWith("Digit") && ctrlKey && altKey && metaKey:
+      return navigateUnpinned(parseInt(code[5]) - 1);
+    case code == "KeyS" && ctrlKey && altKey && metaKey:
+      return stash();
+    case (code == "BracketRight" || code == "BracketLeft") &&
+      ctrlKey &&
+      altKey &&
+      metaKey:
+      return toggleAdjacentTabSelection(code == "BracketRight" ? 1 : -1);
+    default:
+      return null
   }
-  return null;
 }
 
 const app = document.createElement("div");
