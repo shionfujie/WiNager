@@ -222,9 +222,20 @@ function moveActiveTab(ctx) {
   console.debug("moving active tab (UD)")
   getTabActivity(tabActivity => {
     console.debug(tabActivity)
-    const selectOptions = tabActivity.map(th => ({ value: th.id, iconUrl: th.favIconUrl, displayName: th.title + " " + th.hostname }))
+    
+    const selectOptions = tabActivity.map(th => {
+      const displayName = th.title + " " + getShortURLRep(th.url)
+      return { value: th.id, iconUrl: th.favIconUrl, displayName }
+    })
     sendSelectOptions(ctx, selectOptions)
   })
+}
+
+function getShortURLRep(urlStr) {
+  const url = new URL(urlStr)
+  if (url.protocol === 'chrome:') return 'chrome://' + url.hostname
+  else if (url.hostname.startsWith('www.')) return url.hostname.substr(4)
+  return url.hostname
 }
 
 var TabActivity = undefined // An in-memory cache of the activity to prevent phantom read
@@ -278,7 +289,7 @@ function getTabActivity(callback) {
       console.debug("Obtaining tab activity: tabs:", tabs)
       const tabHistory = tabs.map((tab, i) => {
         const [id, timestamp] = activityHistoryRaw[i]
-        return { id, timestamp, title: tab.title, favIconUrl: tab.favIconUrl, hostname: new URL(tab.url).hostname }
+        return { id, timestamp, title: tab.title, favIconUrl: tab.favIconUrl, url: tab.url }
       })
       callback(tabHistory)
     })
