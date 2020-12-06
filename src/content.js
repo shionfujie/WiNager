@@ -25,13 +25,19 @@ function Content() {
   const [stashModalIsOpen, openStashModal, closeStashModal] = useSwitch();
   useDocumentKeydown(event => {
     const {code, ctrlKey, altKey, metaKey} = event 
-    if (port === null) return;
-
-    if (code == "KeyP" && ctrlKey && altKey && metaKey) openStashModal();
-    else if (code == "KeyC" && ctrlKey && metaKey) copyLinkAddress();
-
     const action = mapEventToAction(event)
-    if (action !== null) port.postMessage(action)
+    switch(true) {
+      case port === null:
+        return
+      case code == "KeyP" && ctrlKey && altKey && metaKey:
+        openStashModal();
+        break;
+      case code == "KeyC" && ctrlKey && metaKey:
+        copyLinkAddress();
+        break;
+      case action !== null:
+        port.postMessage(action)
+    }
   })
   chrome.runtime.onMessage.addListener(({type}) => {
     if (type === "list stash entries") openStashModal()
