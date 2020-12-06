@@ -1,13 +1,16 @@
 /*global chrome*/
 
-import { PORT_NAME_DEFAULT, MESSAGE_STASH_POP } from "./util/constants";
 import {
   MESSAGE_DETACH,
   MESSAGE_MOVE,
   MESSAGE_DUPLICATE,
   MESSAGE_NAVIGATE_UNPINNED,
   MESSAGE_STASH,
-  MESSAGE_ADJ_TAB_SELECTION
+  MESSAGE_ADJ_TAB_SELECTION,
+  PORT_NAME_DEFAULT, 
+  MESSAGE_STASH_POP, 
+  MESSAGE_GO_FORWARD,
+  MESSAGE_GO_BACK
 } from "./util/constants";
 import detachTabs from "./chrome/tabs/detachTabs";
 import moveTabs from "./chrome/tabs/moveTabs";
@@ -25,10 +28,10 @@ chrome.runtime.onConnect.addListener(({ name, onMessage }) => {
     onMessage.addListener(message => {
       console.debug("Receiving message:", message)
       switch (message.type) {
-        case MESSAGE_DETACH: 
+        case MESSAGE_DETACH:
           detachTabs();
           break
-        case MESSAGE_MOV:
+        case MESSAGE_MOVE:
           moveTabs(message.offset);
           break;
         case MESSAGE_DUPLICATE:
@@ -46,6 +49,12 @@ chrome.runtime.onConnect.addListener(({ name, onMessage }) => {
         case MESSAGE_ADJ_TAB_SELECTION:
           toggleAdjacentTabSelection(message.offset)
           break;
+        case MESSAGE_GO_FORWARD:
+          goForward()
+          break
+        case MESSAGE_GO_BACK:
+          goBack();
+          break
       }
     });
 });
@@ -351,4 +360,20 @@ function activateTab(tabId) {
       chrome.tabs.update(tabId, {active: true})
     })
   })
+}
+
+function goForward() {
+  if (Navigator.forward === null) {
+    return
+  }
+  Navigator = Navigator.forward
+  activateTab(Navigator.tabId)
+}
+
+function goBack() {
+  if (Navigator.back === null || Navigator.back.tabId === null) {
+    return
+  }
+  Navigator = Navigator.back
+  activateTab(Navigator.tabId)
 }
