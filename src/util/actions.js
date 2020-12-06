@@ -5,7 +5,9 @@ import {
   MESSAGE_NAVIGATE_UNPINNED,
   MESSAGE_STASH,
   MESSAGE_STASH_POP,
-  MESSAGE_ADJ_TAB_SELECTION
+  MESSAGE_ADJ_TAB_SELECTION,
+  MESSAGE_GO_FORWARD,
+  MESSAGE_GO_BACK
 } from "./constants";
 
 export function detachTab() {
@@ -51,5 +53,17 @@ export function toggleAdjacentTabSelection(offset) {
   return {
     type: MESSAGE_ADJ_TAB_SELECTION,
     offset
+  }
+}
+
+export function goForward() {
+  return {
+    type: MESSAGE_GO_FORWARD
+  }
+}
+
+export function goBack() {
+  return {
+    type: MESSAGE_GO_BACK
   }
 }

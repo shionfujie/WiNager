@@ -23,6 +23,7 @@ const stashEntrySource = StashEntrySource();
 chrome.runtime.onConnect.addListener(({ name, onMessage }) => {
   if (name == PORT_NAME_DEFAULT)
     onMessage.addListener(message => {
+      console.debug("Receiving message:", message)
       if (message.type == MESSAGE_DETACH) detachTabs();
       else if (message.type == MESSAGE_MOVE) moveTabs(message.offset);
       else if (message.type == MESSAGE_DUPLICATE) duplicateCurrentTab();
