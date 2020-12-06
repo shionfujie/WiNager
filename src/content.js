@@ -31,7 +31,7 @@ function Content() {
     else if (code == "KeyC" && ctrlKey && metaKey) copyLinkAddress();
 
     const action = mapEventToAction(event)
-    if (action !== null) port.postMessage(mapEventToAction(event))
+    if (action !== null) port.postMessage(action)
   })
   chrome.runtime.onMessage.addListener(({type}) => {
     if (type === "list stash entries") openStashModal()
