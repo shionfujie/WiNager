@@ -326,22 +326,16 @@ chrome.tabs.onRemoved.addListener(tabId => {
 })
 
 function getTabActivity(callback) {
-  getTabActivityRaw(tabActivity => {
-    const history = Object.entries(tabActivity).sort(([_, timestamp], [_1, timestamp1]) =>
-      timestamp1 - timestamp)
-    const ids = history.map(([id, _]) => parseInt(id))
-    getTabs(ids, tabs => {
-      const tabHistory = tabs.map((tab, i) => {
-        const [id, timestamp] = history[i]
-        return { id, timestamp, title: tab.title, favIconUrl: tab.favIconUrl, url: tab.url }
-      })
-      callback(tabHistory)
+  const history = Object.entries(TabActivity).sort(([_, timestamp], [_1, timestamp1]) =>
+    timestamp1 - timestamp)
+  const ids = history.map(([id, _]) => parseInt(id))
+  getTabs(ids, tabs => {
+    const tabHistory = tabs.map((tab, i) => {
+      const [id, timestamp] = history[i]
+      return { id, timestamp, title: tab.title, favIconUrl: tab.favIconUrl, url: tab.url }
     })
+    callback(tabHistory)
   })
-}
-
-function getTabActivityRaw(callback) {
-  chrome.storage.sync.get({ tabActivity: {} }, ({ tabActivity }) => callback(tabActivity))
 }
 
 function getTabs(ids, callback) {
