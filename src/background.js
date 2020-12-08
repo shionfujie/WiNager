@@ -252,7 +252,6 @@ function reopenInIncognitoMode() {
 }
 
 function moveActiveTab(ctx) {
-  console.debug("moving active tab (UD)")
   getTabActivity(tabActivity => {
     console.debug(tabActivity)
     
@@ -394,7 +393,17 @@ function moveActiveTabWithinWindow(ctx) {
 
 function moveFocusedWindow(ctx) {
   chrome.tabs.query({active: true}, tabs => {
-    const options = tabs.map(t => {
+    const tabsSorted = tabs.sort((t, t1) => {
+      const timestamp = TabActivity[t.id]
+      const timestamp1 = TabActivity[t1.id]
+      switch(true) {
+        case timestamp === undefined && timestamp1 === undefined: return 0
+        case timestamp !== undefined && timestamp1 === undefined: return - 1
+        case timestamp === undefined && timestamp1 !== undefined: return 1
+        default: return timestamp1 - timestamp
+      }
+    })
+    const options = tabsSorted.map(t => {
       const displayName = t.title + " " + getShortURLRep(t.url)
       return { value: t.id, iconUrl: t.favIconUrl, displayName}
     })
