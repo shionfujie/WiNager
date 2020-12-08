@@ -172,8 +172,7 @@ function togglePinnedStates() {
   chrome.tabs.query({ highlighted: true, currentWindow: true }, tabs => {
     const tabIds = []
     const updates = []
-    for (const { id, pinned } of 
-      s) {
+    for (const { id, pinned } of tabs) {
       tabIds.push(id)
       updates.push({ pinned: !pinned })
     }
@@ -274,16 +273,25 @@ function getShortURLRep(urlStr) {
 var $TabActivity = undefined // An in-memory cache of the activity to prevent phantom read
 var Navigator = {back: null, forward: null, tabId: null}
 
+function getTabActivityRaw(callback) {
+  chrome.storage.sync.get({tabActivity: {}}, ({tabActivity}) => {
+    if (!$TabActivity) {
+      $TabActivity = tabActivity
+    }
+    callback($TabActivity)
+  })
+}
+
 chrome.runtime.onInstalled.addListener(() => {
   // // The following code is for development to clear up the activity
   // chrome.storage.sync.remove("tabActivity", () => {
   //   TabActivity = {}
   // })
-  chrome.storage.sync.get({ tabActivity: {} }, ({ tabActivity }) => {
-    console.debug("Installing tab activity")
-    console.debug(tabActivity)
-    $TabActivity = tabActivity
-  })
+  // chrome.storage.sync.get({ tabActivity: {} }, ({ tabActivity }) => {
+  //   console.debug("Installing tab activity")
+  //   console.debug(tabActivity)
+  //   $TabActivity = tabActivity
+  // })
 })
 
 chrome.tabs.onActivated.addListener(({tabId}) => {
@@ -292,49 +300,47 @@ chrome.tabs.onActivated.addListener(({tabId}) => {
   console.debug(tabId, now)
   console.debug('Updating tab activity')
 
-  if (!$TabActivity) {
-    console.error("In-memory cache of the tab activity expected to be initialized")
-    return
-  }
-  $TabActivity[tabId] = now
-  console.debug($TabActivity)
-  chrome.storage.sync.set({ tabActivity: $TabActivity })
-
-  // Record a new tab activation if yet recorded
-  if (Navigator.tabId !== tabId) {
-    const nextNavigator = {
-      tabId,
-      forward: null,
-      back: Navigator
+  getTabActivityRaw(tabActivity => {
+    tabActivity[tabId] = now
+    console.debug(tabActivity)
+    chrome.storage.sync.set({ tabActivity: tabActivity })
+  
+    // Record a new tab activation if yet recorded
+    if (Navigator.tabId !== tabId) {
+      const nextNavigator = {
+        tabId,
+        forward: null,
+        back: Navigator
+      }
+      Navigator.forward = nextNavigator
+      Navigator = nextNavigator
+      console.debug("Navigator Updated:", Navigator)
     }
-    Navigator.forward = nextNavigator
-    Navigator = nextNavigator
-    console.debug("Navigator Updated:", Navigator)
-  }
+  })
 })
 
 chrome.tabs.onRemoved.addListener(tabId => {
   console.debug('Clearing up tab entry')
   console.debug(tabId)
-  if (!$TabActivity) {
-    console.error("In-memory cache of the tab activity expected to be initialized")
-    return
-  }
-  delete $TabActivity[tabId]
-  chrome.storage.sync.set({ tabActivity: $TabActivity })
-  console.debug($TabActivity)
+  getTabActivityRaw(tabActivity => {
+    delete tabActivity[tabId]
+    chrome.storage.sync.set({ tabActivity: tabActivity })
+    console.debug(tabActivity)
+  })
 })
 
 function getTabActivity(callback) {
-  const history = Object.entries($TabActivity).sort(([_, timestamp], [_1, timestamp1]) =>
+  getTabActivityRaw(tabActivity => {
+    const history = Object.entries(tabActivity).sort(([_, timestamp], [_1, timestamp1]) =>
     timestamp1 - timestamp)
-  const ids = history.map(([id, _]) => parseInt(id))
-  getTabs(ids, tabs => {
-    const tabHistory = tabs.map((tab, i) => {
-      const [id, timestamp] = history[i]
-      return { id, timestamp, title: tab.title, favIconUrl: tab.favIconUrl, url: tab.url }
+    const ids = history.map(([id, _]) => parseInt(id))
+    getTabs(ids, tabs => {
+      const tabHistory = tabs.map((tab, i) => {
+        const [id, timestamp] = history[i]
+        return { id, timestamp, title: tab.title, favIconUrl: tab.favIconUrl, url: tab.url }
+      })
+      callback(tabHistory)
     })
-    callback(tabHistory)
   })
 }
 
@@ -393,21 +399,23 @@ function moveActiveTabWithinWindow(ctx) {
 }
 
 function moveFocusedWindow(ctx) {
-  chrome.tabs.query({active: true}, tabs => {
-    const tabsSorted = tabs.sort((t, t1) => {
-      const timestamp = $TabActivity[t.id]
-      const timestamp1 = $TabActivity[t1.id]
-      switch(true) {
-        case timestamp === undefined && timestamp1 === undefined: return 0
-        case timestamp !== undefined && timestamp1 === undefined: return - 1
-        case timestamp === undefined && timestamp1 !== undefined: return 1
-        default: return timestamp1 - timestamp
-      }
+  getTabActivityRaw(tabActivity => {
+    chrome.tabs.query({active: true}, tabs => {
+      const tabsSorted = tabs.sort((t, t1) => {
+        const timestamp = tabActivity[t.id]
+        const timestamp1 = tabActivity[t1.id]
+        switch(true) {
+          case timestamp === undefined && timestamp1 === undefined: return 0
+          case timestamp !== undefined && timestamp1 === undefined: return - 1
+          case timestamp === undefined && timestamp1 !== undefined: return 1
+          default: return timestamp1 - timestamp
+        }
+      })
+      const options = tabsSorted.map(t => {
+        const displayName = t.title + " " + getShortURLRep(t.url)
+        return { value: t.id, iconUrl: t.favIconUrl, displayName}
+      })
+      sendSelectOptions(ctx, options)
     })
-    const options = tabsSorted.map(t => {
-      const displayName = t.title + " " + getShortURLRep(t.url)
-      return { value: t.id, iconUrl: t.favIconUrl, displayName}
-    })
-    sendSelectOptions(ctx, options)
   })
 }
