@@ -153,6 +153,10 @@ const actionSpec = {
     "go to within": {
       displayName: "Go to Tab within Window",
       f: moveActiveTabWithinWindow
+    },
+    "go to window": {
+      displayName: "Go to Window",
+      f: moveFocusedWindow
     }
   }
 };
@@ -393,4 +397,8 @@ function moveActiveTabWithinWindow(ctx) {
     })
     sendSelectOptions(ctx, options)
   })
+}
+
+function moveFocusedWindow(ctx) {
+  console.debug("Hello?")
 }
