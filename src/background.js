@@ -289,28 +289,17 @@ function getTabActivityRaw(callback) {
 //   })
 // })
 
-chrome.tabs.onActivated.addListener(({tabId}) => {
-  console.debug('Recording tab activity')
-  const now = Date.now()
-  console.debug(tabId, now)
-  console.debug('Updating tab activity')
+chrome.windows.onFocusChanged.addListener(windowId => {
+  chrome.tabs.query({windowId, active: true}, ([tab]) => {
+    recordTabActivity(tab.id, updated => {
+      console.debug('windows.onFocusChanged: Recording tab activity', updated)
+    })
+  })
+})
 
-  getTabActivityRaw(tabActivity => {
-    tabActivity[tabId] = now
-    console.debug(tabActivity)
-    chrome.storage.sync.set({ tabActivity: tabActivity })
-  
-    // Record a new tab activation if yet recorded
-    if (Navigator.tabId !== tabId) {
-      const nextNavigator = {
-        tabId,
-        forward: null,
-        back: Navigator
-      }
-      Navigator.forward = nextNavigator
-      Navigator = nextNavigator
-      console.debug("Navigator Updated:", Navigator)
-    }
+chrome.tabs.onActivated.addListener(({tabId}) => {
+  recordTabActivity(tabId, updated => {
+    console.debug('tabs.onActivated: Recording tab activity', updated)
   })
 })
 
@@ -323,6 +312,29 @@ chrome.tabs.onRemoved.addListener(tabId => {
     console.debug(tabActivity)
   })
 })
+
+function recordTabActivity(tabId, callback) {
+  const now = Date.now()
+  console.debug("recordTabActivity: tabId:", tabId, "timestamp:", now)
+
+  getTabActivityRaw(tabActivity => {
+    tabActivity[tabId] = now
+    callback(tabActivity)
+    chrome.storage.sync.set({ tabActivity: tabActivity })
+  
+    // Record a new tab activation if yet recorded
+    if (Navigator.tabId !== tabId) {
+      const nextNavigator = {
+        tabId,
+        forward: null,
+        back: Navigator
+      }
+      Navigator.forward = nextNavigator
+      Navigator = nextNavigator
+      console.debug("recordTabActivity: Navigator Updated:", Navigator)
+    }
+  })
+}
 
 function getTabActivity(callback) {
   getTabActivityRaw(tabActivity => {
