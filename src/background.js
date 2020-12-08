@@ -385,6 +385,12 @@ function goBack() {
   activateTab(Navigator.tabId)
 }
 
-function moveActiveTabWithinWindow() {
-  console.debug('Hello?')
+function moveActiveTabWithinWindow(ctx) {
+  chrome.tabs.query({currentWindow: true}, tabs => {
+    const options = tabs.map(t => {
+      const displayName = t.title + " " + getShortURLRep(t.url)
+      return { value: t.id, iconUrl: t.favIconUrl, displayName}
+    })
+    sendSelectOptions(ctx, options)
+  })
 }
