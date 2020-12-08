@@ -153,6 +153,10 @@ const actionSpec = {
     "go to within": {
       displayName: "Go to Tab within Window",
       f: moveActiveTabWithinWindow
+    },
+    "go to window": {
+      displayName: "Go to Window",
+      f: moveFocusedWindow
     }
   }
 };
@@ -248,7 +252,6 @@ function reopenInIncognitoMode() {
 }
 
 function moveActiveTab(ctx) {
-  console.debug("moving active tab (UD)")
   getTabActivity(tabActivity => {
     console.debug(tabActivity)
     
@@ -322,22 +325,15 @@ chrome.tabs.onRemoved.addListener(tabId => {
 })
 
 function getTabActivity(callback) {
-  console.debug("Retrieving tab activity")
-  chrome.storage.sync.get({ tabActivity: {} }, ({ tabActivity }) => {
-    const activityHistoryRaw = Object.entries(tabActivity).sort(([_, timestamp], [_1, timestamp1]) =>
-      timestamp1 - timestamp)
-    console.debug("Obtaining tab activity: activityHistoryRaw:", activityHistoryRaw)
-
-    const tabIds = activityHistoryRaw.map(([id, _]) => parseInt(id))
-    getTabs(tabIds, tabs => {
-      console.debug("Obtaining tab activity: tabs:", tabs)
-
-      const tabHistory = tabs.map((tab, i) => {
-        const [id, timestamp] = activityHistoryRaw[i]
-        return { id, timestamp, title: tab.title, favIconUrl: tab.favIconUrl, url: tab.url }
-      })
-      callback(tabHistory)
+  const history = Object.entries(TabActivity).sort(([_, timestamp], [_1, timestamp1]) =>
+    timestamp1 - timestamp)
+  const ids = history.map(([id, _]) => parseInt(id))
+  getTabs(ids, tabs => {
+    const tabHistory = tabs.map((tab, i) => {
+      const [id, timestamp] = history[i]
+      return { id, timestamp, title: tab.title, favIconUrl: tab.favIconUrl, url: tab.url }
     })
+    callback(tabHistory)
   })
 }
 
@@ -388,6 +384,26 @@ function goBack() {
 function moveActiveTabWithinWindow(ctx) {
   chrome.tabs.query({currentWindow: true}, tabs => {
     const options = tabs.map(t => {
+      const displayName = t.title + " " + getShortURLRep(t.url)
+      return { value: t.id, iconUrl: t.favIconUrl, displayName}
+    })
+    sendSelectOptions(ctx, options)
+  })
+}
+
+function moveFocusedWindow(ctx) {
+  chrome.tabs.query({active: true}, tabs => {
+    const tabsSorted = tabs.sort((t, t1) => {
+      const timestamp = TabActivity[t.id]
+      const timestamp1 = TabActivity[t1.id]
+      switch(true) {
+        case timestamp === undefined && timestamp1 === undefined: return 0
+        case timestamp !== undefined && timestamp1 === undefined: return - 1
+        case timestamp === undefined && timestamp1 !== undefined: return 1
+        default: return timestamp1 - timestamp
+      }
+    })
+    const options = tabsSorted.map(t => {
       const displayName = t.title + " " + getShortURLRep(t.url)
       return { value: t.id, iconUrl: t.favIconUrl, displayName}
     })
