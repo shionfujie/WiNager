@@ -399,5 +399,11 @@ function moveActiveTabWithinWindow(ctx) {
 }
 
 function moveFocusedWindow(ctx) {
-  console.debug("Hello?")
+  chrome.tabs.query({active: true}, tabs => {
+    const options = tabs.map(t => {
+      const displayName = t.title + " " + getShortURLRep(t.url)
+      return { value: t.id, iconUrl: t.favIconUrl, displayName}
+    })
+    sendSelectOptions(ctx, options)
+  })
 }
