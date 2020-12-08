@@ -282,17 +282,12 @@ function getTabActivityRaw(callback) {
   })
 }
 
-chrome.runtime.onInstalled.addListener(() => {
-  // // The following code is for development to clear up the activity
-  // chrome.storage.sync.remove("tabActivity", () => {
-  //   TabActivity = {}
-  // })
-  // chrome.storage.sync.get({ tabActivity: {} }, ({ tabActivity }) => {
-  //   console.debug("Installing tab activity")
-  //   console.debug(tabActivity)
-  //   $TabActivity = tabActivity
-  // })
-})
+// The following code is for development to clear up the activity
+// chrome.runtime.onInstalled.addListener(() => {
+//   chrome.storage.sync.remove("tabActivity", () => {
+//     TabActivity = {}
+//   })
+// })
 
 chrome.tabs.onActivated.addListener(({tabId}) => {
   console.debug('Recording tab activity')
