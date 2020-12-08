@@ -289,6 +289,34 @@ function getTabActivityRaw(callback) {
 //   })
 // })
 
+chrome.windows.onFocusChanged.addListener(windowId => {
+  chrome.tabs.query({windowId, active: true}, ([tab]) => {
+    const tabId = tab.id
+    console.debug('windows.onFocusChanged: Recording tab activity')
+    const now = Date.now()
+    console.debug(tabId, now)
+    console.debug('windows.onFocusChanged: Updating tab activity')
+
+    getTabActivityRaw(tabActivity => {
+      tabActivity[tabId] = now
+      console.debug(tabActivity)
+      chrome.storage.sync.set({ tabActivity: tabActivity })
+    
+      // Record a new tab activation if yet recorded
+      if (Navigator.tabId !== tabId) {
+        const nextNavigator = {
+          tabId,
+          forward: null,
+          back: Navigator
+        }
+        Navigator.forward = nextNavigator
+        Navigator = nextNavigator
+        console.debug("windows.onFocusChanged: Navigator Updated:", Navigator)
+      }
+    })
+  })
+})
+
 chrome.tabs.onActivated.addListener(({tabId}) => {
   console.debug('Recording tab activity')
   const now = Date.now()
