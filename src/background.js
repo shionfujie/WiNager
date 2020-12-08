@@ -149,6 +149,10 @@ const actionSpec = {
     "go to": {
       displayName: "Go to ...",
       f: moveActiveTab
+    },
+    "go to within": {
+      displayName: "Go to Tab within Window",
+      f: moveActiveTabWithinWindow
     }
   }
 };
@@ -323,9 +327,11 @@ function getTabActivity(callback) {
     const activityHistoryRaw = Object.entries(tabActivity).sort(([_, timestamp], [_1, timestamp1]) =>
       timestamp1 - timestamp)
     console.debug("Obtaining tab activity: activityHistoryRaw:", activityHistoryRaw)
+
     const tabIds = activityHistoryRaw.map(([id, _]) => parseInt(id))
     getTabs(tabIds, tabs => {
       console.debug("Obtaining tab activity: tabs:", tabs)
+
       const tabHistory = tabs.map((tab, i) => {
         const [id, timestamp] = activityHistoryRaw[i]
         return { id, timestamp, title: tab.title, favIconUrl: tab.favIconUrl, url: tab.url }
@@ -377,4 +383,14 @@ function goBack() {
   }
   Navigator = Navigator.back
   activateTab(Navigator.tabId)
+}
+
+function moveActiveTabWithinWindow(ctx) {
+  chrome.tabs.query({currentWindow: true}, tabs => {
+    const options = tabs.map(t => {
+      const displayName = t.title + " " + getShortURLRep(t.url)
+      return { value: t.id, iconUrl: t.favIconUrl, displayName}
+    })
+    sendSelectOptions(ctx, options)
+  })
 }
