@@ -415,16 +415,7 @@ function moveActiveTabWithinWindow(ctx) {
 function moveFocusedWindow(ctx) {
   getTabActivityRaw(tabActivity => {
     chrome.tabs.query({active: true}, tabs => {
-      const tabsSorted = tabs.sort((t, t1) => {
-        const timestamp = tabActivity[t.id]
-        const timestamp1 = tabActivity[t1.id]
-        switch(true) {
-          case timestamp === undefined && timestamp1 === undefined: return 0
-          case timestamp !== undefined && timestamp1 === undefined: return - 1
-          case timestamp === undefined && timestamp1 !== undefined: return 1
-          default: return timestamp1 - timestamp
-        }
-      })
+      const tabsSorted = tabs.sort(TabComparator(tabActivity))
       const options = tabsSorted.map(t => {
         const displayName = t.title + " " + getShortURLRep(t.url)
         return { value: t.id, iconUrl: t.favIconUrl, displayName}
@@ -432,4 +423,17 @@ function moveFocusedWindow(ctx) {
       sendSelectOptions(ctx, options)
     })
   })
+}
+
+function TabComparator(tabActivity) {
+  return (t, t1) => {
+    const timestamp = tabActivity[t.id]
+    const timestamp1 = tabActivity[t1.id]
+    switch(true) {
+      case timestamp === undefined && timestamp1 === undefined: return 0
+      case timestamp !== undefined && timestamp1 === undefined: return - 1
+      case timestamp === undefined && timestamp1 !== undefined: return 1
+      default: return timestamp1 - timestamp
+    }
+  }
 }
