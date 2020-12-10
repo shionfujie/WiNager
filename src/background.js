@@ -262,14 +262,20 @@ function moveActiveTab(ctx) {
   //   sendSelectOptions(ctx, selectOptions)
   // })
   getTabActivityRaw(tabActivity => {
-    chrome.tabs.query({}, tabs => {
-      const tabsSorted = tabs.sort(TabComparator(tabActivity))
-      const options = tabsSorted.map(t => {
-        const displayName = t.title + " " + getShortURLRep(t.url)
-        return { value: t.id, iconUrl: t.favIconUrl, displayName}
-      })
-      sendSelectOptions(ctx, options)
+    sendSelectOptionsFromTabs(ctx, {}, TabComparator(tabActivity))
+  })
+}
+
+function sendSelectOptionsFromTabs(ctx, query, tabComparator) {
+  chrome.tabs.query(query, tabs => {
+    const tabsSorted = !!tabComparator ? 
+      tabs.sort(tabComparator) :
+      tabs
+    const options = tabsSorted.map(t => {
+      const displayName = t.title + " " + getShortURLRep(t.url)
+      return { value: t.id, iconUrl: t.favIconUrl, displayName}
     })
+    sendSelectOptions(ctx, options)
   })
 }
 
@@ -413,25 +419,12 @@ function goBack() {
 }
 
 function moveActiveTabWithinWindow(ctx) {
-  chrome.tabs.query({currentWindow: true}, tabs => {
-    const options = tabs.map(t => {
-      const displayName = t.title + " " + getShortURLRep(t.url)
-      return { value: t.id, iconUrl: t.favIconUrl, displayName}
-    })
-    sendSelectOptions(ctx, options)
-  })
+  sendSelectOptionsFromTabs(ctx, {currentWindow: true})
 }
 
 function moveFocusedWindow(ctx) {
   getTabActivityRaw(tabActivity => {
-    chrome.tabs.query({active: true}, tabs => {
-      const tabsSorted = tabs.sort(TabComparator(tabActivity))
-      const options = tabsSorted.map(t => {
-        const displayName = t.title + " " + getShortURLRep(t.url)
-        return { value: t.id, iconUrl: t.favIconUrl, displayName}
-      })
-      sendSelectOptions(ctx, options)
-    })
+    sendSelectOptionsFromTabs(ctx, {active: true}, TabComparator(tabActivity))
   })
 }
 
