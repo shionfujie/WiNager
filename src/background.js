@@ -283,11 +283,17 @@ function getTabActivityRaw(callback) {
 }
 
 // The following code is for development to clear up the activity
-// chrome.runtime.onInstalled.addListener(() => {
-//   chrome.storage.sync.remove("tabActivity", () => {
-//     TabActivity = {}
-//   })
-// })
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.storage.sync.get({tabActivity: {}}, ({tabActivity}) => {
+    chrome.tabs.query({}, tabs => {
+      const filteredActivity = {}
+      for (const tab of tabs) {
+        filteredActivity[tab.id] = tabActivity[tab.id]
+      }
+      chrome.storage.sync.set({ tabActivity: filteredActivity })
+    })
+  })
+})
 
 chrome.windows.onFocusChanged.addListener(windowId => {
   chrome.tabs.query({windowId, active: true}, ([tab]) => {
