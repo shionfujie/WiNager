@@ -252,14 +252,24 @@ function reopenInIncognitoMode() {
 }
 
 function moveActiveTab(ctx) {
-  getTabActivity(tabActivity => {
-    console.debug(tabActivity)
+  // getTabActivity(tabActivity => {
+  //   console.debug(tabActivity)
     
-    const selectOptions = tabActivity.map(th => {
-      const displayName = th.title + " " + getShortURLRep(th.url)
-      return { value: th.id, iconUrl: th.favIconUrl, displayName }
+  //   const selectOptions = tabActivity.map(th => {
+  //     const displayName = th.title + " " + getShortURLRep(th.url)
+  //     return { value: th.id, iconUrl: th.favIconUrl, displayName }
+  //   })
+  //   sendSelectOptions(ctx, selectOptions)
+  // })
+  getTabActivityRaw(tabActivity => {
+    chrome.tabs.query({}, tabs => {
+      const tabsSorted = tabs.sort(TabComparator(tabActivity))
+      const options = tabsSorted.map(t => {
+        const displayName = t.title + " " + getShortURLRep(t.url)
+        return { value: t.id, iconUrl: t.favIconUrl, displayName}
+      })
+      sendSelectOptions(ctx, options)
     })
-    sendSelectOptions(ctx, selectOptions)
   })
 }
 
