@@ -282,8 +282,9 @@ function getTabActivityRaw(callback) {
   })
 }
 
-// The following code is for development to clear up the activity
 chrome.runtime.onInstalled.addListener(() => {
+  // Comparing all existing tab activation records and all tabs,
+  // Filters only those with living session ids
   chrome.storage.sync.get({tabActivity: {}}, ({tabActivity}) => {
     chrome.tabs.query({}, tabs => {
       const filteredActivity = {}
