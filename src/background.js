@@ -380,8 +380,8 @@ function sendSelectOptions(ctx, options) {
 
 function activateTab(tabId) {
   chrome.tabs.get(tabId, tab => {
-    chrome.windows.update(tab.windowId, {focused: true}, () => {
-      chrome.tabs.update(tabId, {active: true})
+    chrome.tabs.update(tabId, {active: true}, () => {
+      chrome.windows.update(tab.windowId, {focused: true})
     })
   })
 }
