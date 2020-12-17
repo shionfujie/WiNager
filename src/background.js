@@ -271,7 +271,8 @@ function getShortURLRep(urlStr) {
 }
 
 var $TabActivity = undefined // An in-memory cache of the activity to prevent phantom read
-var Navigator = {back: null, forward: null, tabId: null}
+var $TabNavigator = undefined
+var NAVIGATOR_EMPTY = {back: null, forward: null, tabId: null}
 
 function getTabActivityRaw(callback) {
   chrome.storage.sync.get({tabActivity: {}}, ({tabActivity}) => {
@@ -280,6 +281,58 @@ function getTabActivityRaw(callback) {
     }
     callback($TabActivity)
   })
+}
+
+function getTabNavigator(callback) {
+  chrome.storage.sync.get({tabNavigator: NAVIGATOR_EMPTY}, ({tabNavigator}) => {
+    if (!$TabNavigator) {
+      $TabNavigator = tabNavigator
+    }
+    callback($TabNavigator)
+  })
+}
+
+function findNextValidNavigator(callback) {
+  function $findNextValidNavigator(navigator, callback) {
+    if (navigator.forward === null) {
+      callback(null)
+      return
+    }
+    checkIfTabExists(navigator.forward.tabId, b => {
+      if (b) {
+        callback(navigator.forward)
+        return
+      }
+      $findNextValidNavigator(navigator.forward, callback)
+    })
+  }
+  getTabNavigator(navigator => {
+    $findNextValidNavigator(navigator, callback)
+  })
+}
+
+function findPrevValidNavigator(callback) {
+  function $findPrevValidNavigator(navigator, callback) {
+    if (navigator.back === null || navigator.back.tabId === null) {
+      callback(null)
+      return
+    }
+    checkIfTabExists(navigator.back.tabId, b => {
+      if (b) {
+        callback(navigator.back)
+        return
+      }
+      $findPrevValidNavigator(navigator.back, callback)
+    })
+  }
+  getTabNavigator(navigator => {
+    $findPrevValidNavigator(navigator, callback)
+  })
+}
+
+function setTabNavigator(tabNavigator, callback) {
+  $TabNavigator = tabNavigator
+  chrome.storage.sync.set({tabNavigator}, callback)
 }
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -329,17 +382,20 @@ function recordTabActivity(tabId, callback) {
     callback(tabActivity)
     chrome.storage.sync.set({ tabActivity: tabActivity })
   
-    // Record a new tab activation if yet recorded
-    if (Navigator.tabId !== tabId) {
-      const nextNavigator = {
-        tabId,
-        forward: null,
-        back: Navigator
+    getTabNavigator(tabNavigator => {
+      // Record a new tab activation if yet recorded
+      if (tabNavigator.tabId !== tabId) {
+        const nextNavigator = {
+          tabId,
+          forward: null,
+          back: tabNavigator
+        }
+        tabNavigator.forward = nextNavigator
+        setTabNavigator(nextNavigator, () => {
+          console.debug("recordTabActivity: Navigator Updated:", nextNavigator)
+        })
       }
-      Navigator.forward = nextNavigator
-      Navigator = nextNavigator
-      console.debug("recordTabActivity: Navigator Updated:", Navigator)
-    }
+    })
   })
 }
 
@@ -387,19 +443,25 @@ function activateTab(tabId) {
 }
 
 function goForward() {
-  if (Navigator.forward === null) {
-    return
-  }
-  Navigator = Navigator.forward
-  activateTab(Navigator.tabId)
+  findNextValidNavigator(nextNavigator => {
+    if (nextNavigator === null) {
+      return
+    }
+    setTabNavigator(nextNavigator, () => {
+      activateTab(nextNavigator.tabId)
+    })
+  })
 }
 
 function goBack() {
-  if (Navigator.back === null || Navigator.back.tabId === null) {
-    return
-  }
-  Navigator = Navigator.back
-  activateTab(Navigator.tabId)
+  findPrevValidNavigator(prevNavigator => {
+    if (prevNavigator === null) {
+      return
+    }
+    setTabNavigator(prevNavigator, () => {
+      activateTab(prevNavigator.tabId)
+    })
+  })
 }
 
 function moveActiveTabWithinWindow(ctx) {
@@ -431,5 +493,13 @@ function moveFocusedWindow(ctx) {
       })
       sendSelectOptions(ctx, options)
     })
+  })
+}
+
+function checkIfTabExists(id, callback) {
+  chrome.tabs.get(id, () => {
+    const err = chrome.runtime.lastError
+    console.debug(err)
+    callback(!(!!err) || err.message !== `No tab with id: ${id}.`)
   })
 }
