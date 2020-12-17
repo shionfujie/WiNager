@@ -271,7 +271,8 @@ function getShortURLRep(urlStr) {
 }
 
 var $TabActivity = undefined // An in-memory cache of the activity to prevent phantom read
-var Navigator = {back: null, forward: null, tabId: null}
+var $TabNavigator = undefined
+var NAVIGATOR_EMPTY = {back: null, forward: null, tabId: null}
 
 function getTabActivityRaw(callback) {
   chrome.storage.sync.get({tabActivity: {}}, ({tabActivity}) => {
@@ -280,6 +281,19 @@ function getTabActivityRaw(callback) {
     }
     callback($TabActivity)
   })
+}
+
+function getTabNavigator(callback) {
+  chrome.storage.sync.get({tabNavigator: NAVIGATOR_EMPTY}, ({tabNavigator}) => {
+    if (!$TabNavigator) {
+      $TabNavigator = tabNavigator
+    }
+    callback($TabNavigator)
+  })
+}
+
+function setTabNavigator(tabNavigator, callback) {
+  chrome.storage.sync.set({tabNavigator}, callback)
 }
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -329,17 +343,20 @@ function recordTabActivity(tabId, callback) {
     callback(tabActivity)
     chrome.storage.sync.set({ tabActivity: tabActivity })
   
-    // Record a new tab activation if yet recorded
-    if (Navigator.tabId !== tabId) {
-      const nextNavigator = {
-        tabId,
-        forward: null,
-        back: Navigator
+    getTabNavigator(tabNavigator => {
+      // Record a new tab activation if yet recorded
+      if (tabNavigator.tabId !== tabId) {
+        const nextNavigator = {
+          tabId,
+          forward: null,
+          back: tabNavigator
+        }
+        tabNavigator.forward = nextNavigator
+        setTabNavigator(nextNavigator, () => {
+          console.debug("recordTabActivity: Navigator Updated:", nextNavigator)
+        })
       }
-      Navigator.forward = nextNavigator
-      Navigator = nextNavigator
-      console.debug("recordTabActivity: Navigator Updated:", Navigator)
-    }
+    })
   })
 }
 
@@ -387,19 +404,25 @@ function activateTab(tabId) {
 }
 
 function goForward() {
-  if (Navigator.forward === null) {
-    return
-  }
-  Navigator = Navigator.forward
-  activateTab(Navigator.tabId)
+  getTabNavigator(tabNavigator => {
+    if (tabNavigator.forward === null) {
+      return
+    }
+    setTabNavigator(tabNavigator.forward, () => {
+      activateTab(tabNavigator.forward.tabId)
+    })
+  })
 }
 
 function goBack() {
-  if (Navigator.back === null || Navigator.back.tabId === null) {
-    return
-  }
-  Navigator = Navigator.back
-  activateTab(Navigator.tabId)
+  getTabNavigator(tabNavigator => {
+    if (tabNavigator.back === null || tabNavigator.back.tabId === null) {
+      return
+    }
+    setTabNavigator(tabNavigator.back, () => {
+      activateTab(tabNavigator.back.tabId)
+    })
+  })
 }
 
 function moveActiveTabWithinWindow(ctx) {
