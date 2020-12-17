@@ -292,6 +292,44 @@ function getTabNavigator(callback) {
   })
 }
 
+function findNextValidNavigator(callback) {
+  function $findNextValidNavigator(navigator, callback) {
+    if (navigator.forward === null) {
+      callback(null)
+      return
+    }
+    checkIfTabExists(navigator.forward.tabId, b => {
+      if (b) {
+        callback(navigator.forward)
+        return
+      }
+      $findNextValidNavigator(navigator.forward, callback)
+    })
+  }
+  getTabNavigator(navigator => {
+    $findNextValidNavigator(navigator, callback)
+  })
+}
+
+function findPrevValidNavigator(callback) {
+  function $findPrevValidNavigator(navigator, callback) {
+    if (navigator.back === null || navigator.back.tabId === null) {
+      callback(null)
+      return
+    }
+    checkIfTabExists(navigator.back.tabId, b => {
+      if (b) {
+        callback(navigator.back)
+        return
+      }
+      $findPrevValidNavigator(navigator.back, callback)
+    })
+  }
+  getTabNavigator(navigator => {
+    $findPrevValidNavigator(navigator, callback)
+  })
+}
+
 function setTabNavigator(tabNavigator, callback) {
   $TabNavigator = tabNavigator
   chrome.storage.sync.set({tabNavigator}, callback)
@@ -405,24 +443,23 @@ function activateTab(tabId) {
 }
 
 function goForward() {
-  getTabNavigator(tabNavigator => {
-    if (tabNavigator.forward === null) {
+  findNextValidNavigator(nextNavigator => {
+    if (nextNavigator === null) {
       return
     }
-    setTabNavigator(tabNavigator.forward, () => {
-      activateTab(tabNavigator.forward.tabId)
+    setTabNavigator(nextNavigator, () => {
+      activateTab(nextNavigator.tabId)
     })
   })
 }
 
 function goBack() {
-  getTabNavigator(tabNavigator => {
-    console.debug("Going back:", tabNavigator)
-    if (tabNavigator.back === null || tabNavigator.back.tabId === null) {
+  findPrevValidNavigator(prevNavigator => {
+    if (prevNavigator === null) {
       return
     }
-    setTabNavigator(tabNavigator.back, () => {
-      activateTab(tabNavigator.back.tabId)
+    setTabNavigator(prevNavigator, () => {
+      activateTab(prevNavigator.tabId)
     })
   })
 }
@@ -456,5 +493,13 @@ function moveFocusedWindow(ctx) {
       })
       sendSelectOptions(ctx, options)
     })
+  })
+}
+
+function checkIfTabExists(id, callback) {
+  chrome.tabs.get(id, () => {
+    const err = chrome.runtime.lastError
+    console.debug(err)
+    callback(!(!!err) || err.message !== `No tab with id: ${id}.`)
   })
 }
