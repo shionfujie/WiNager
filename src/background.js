@@ -293,6 +293,7 @@ function getTabNavigator(callback) {
 }
 
 function setTabNavigator(tabNavigator, callback) {
+  $TabNavigator = tabNavigator
   chrome.storage.sync.set({tabNavigator}, callback)
 }
 
@@ -416,6 +417,7 @@ function goForward() {
 
 function goBack() {
   getTabNavigator(tabNavigator => {
+    console.debug("Going back:", tabNavigator)
     if (tabNavigator.back === null || tabNavigator.back.tabId === null) {
       return
     }
