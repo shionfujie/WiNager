@@ -7,8 +7,8 @@ import {
   MESSAGE_NAVIGATE_UNPINNED,
   MESSAGE_STASH,
   MESSAGE_ADJ_TAB_SELECTION,
-  PORT_NAME_DEFAULT, 
-  MESSAGE_STASH_POP, 
+  PORT_NAME_DEFAULT,
+  MESSAGE_STASH_POP,
   MESSAGE_GO_FORWARD,
   MESSAGE_GO_BACK
 } from "./util/constants";
@@ -157,6 +157,10 @@ const actionSpec = {
     "go to window": {
       displayName: "Go to Window",
       f: moveFocusedWindow
+    },
+    "clear tabs": {
+      displayName: "Clean Redundant Tabs",
+      f: cleanRedundantTabs
     }
   }
 };
@@ -254,7 +258,7 @@ function reopenInIncognitoMode() {
 function moveActiveTab(ctx) {
   getTabActivity(tabActivity => {
     console.debug(tabActivity)
-    
+
     const selectOptions = tabActivity.map(th => {
       const displayName = th.title + " " + getShortURLRep(th.url)
       return { value: th.id, iconUrl: th.favIconUrl, displayName }
@@ -272,10 +276,10 @@ function getShortURLRep(urlStr) {
 
 var $TabActivity = undefined // An in-memory cache of the activity to prevent phantom read
 var $TabNavigator = undefined
-var NAVIGATOR_EMPTY = {back: null, forward: null, tabId: null}
+var NAVIGATOR_EMPTY = { back: null, forward: null, tabId: null }
 
 function getTabActivityRaw(callback) {
-  chrome.storage.sync.get({tabActivity: {}}, ({tabActivity}) => {
+  chrome.storage.sync.get({ tabActivity: {} }, ({ tabActivity }) => {
     if (!$TabActivity) {
       $TabActivity = tabActivity
     }
@@ -284,7 +288,7 @@ function getTabActivityRaw(callback) {
 }
 
 function getTabNavigator(callback) {
-  chrome.storage.sync.get({tabNavigator: NAVIGATOR_EMPTY}, ({tabNavigator}) => {
+  chrome.storage.sync.get({ tabNavigator: NAVIGATOR_EMPTY }, ({ tabNavigator }) => {
     if (!$TabNavigator) {
       $TabNavigator = tabNavigator
     }
@@ -332,13 +336,13 @@ function findPrevValidNavigator(callback) {
 
 function setTabNavigator(tabNavigator, callback) {
   $TabNavigator = tabNavigator
-  chrome.storage.sync.set({tabNavigator}, callback)
+  chrome.storage.sync.set({ tabNavigator }, callback)
 }
 
 chrome.runtime.onInstalled.addListener(() => {
   // Comparing all existing tab activation records and all tabs,
   // Filters only those with living session ids
-  chrome.storage.sync.get({tabActivity: {}}, ({tabActivity}) => {
+  chrome.storage.sync.get({ tabActivity: {} }, ({ tabActivity }) => {
     chrome.tabs.query({}, tabs => {
       const filteredActivity = {}
       for (const tab of tabs) {
@@ -350,14 +354,14 @@ chrome.runtime.onInstalled.addListener(() => {
 })
 
 chrome.windows.onFocusChanged.addListener(windowId => {
-  chrome.tabs.query({windowId, active: true}, ([tab]) => {
+  chrome.tabs.query({ windowId, active: true }, ([tab]) => {
     recordTabActivity(tab.id, updated => {
       console.debug('windows.onFocusChanged: Recording tab activity', updated)
     })
   })
 })
 
-chrome.tabs.onActivated.addListener(({tabId}) => {
+chrome.tabs.onActivated.addListener(({ tabId }) => {
   recordTabActivity(tabId, updated => {
     console.debug('tabs.onActivated: Recording tab activity', updated)
   })
@@ -381,7 +385,7 @@ function recordTabActivity(tabId, callback) {
     tabActivity[tabId] = now
     callback(tabActivity)
     chrome.storage.sync.set({ tabActivity: tabActivity })
-  
+
     getTabNavigator(tabNavigator => {
       // Record a new tab activation if yet recorded
       if (tabNavigator.tabId !== tabId) {
@@ -402,7 +406,7 @@ function recordTabActivity(tabId, callback) {
 function getTabActivity(callback) {
   getTabActivityRaw(tabActivity => {
     const history = Object.entries(tabActivity).sort(([_, timestamp], [_1, timestamp1]) =>
-    timestamp1 - timestamp)
+      timestamp1 - timestamp)
     const ids = history.map(([id, _]) => parseInt(id))
     getTabs(ids, tabs => {
       const tabHistory = tabs.map((tab, i) => {
@@ -436,8 +440,8 @@ function sendSelectOptions(ctx, options) {
 
 function activateTab(tabId) {
   chrome.tabs.get(tabId, tab => {
-    chrome.tabs.update(tabId, {active: true}, () => {
-      chrome.windows.update(tab.windowId, {focused: true})
+    chrome.tabs.update(tabId, { active: true }, () => {
+      chrome.windows.update(tab.windowId, { focused: true })
     })
   })
 }
@@ -465,10 +469,10 @@ function goBack() {
 }
 
 function moveActiveTabWithinWindow(ctx) {
-  chrome.tabs.query({currentWindow: true}, tabs => {
+  chrome.tabs.query({ currentWindow: true }, tabs => {
     const options = tabs.map(t => {
       const displayName = t.title + " " + getShortURLRep(t.url)
-      return { value: t.id, iconUrl: t.favIconUrl, displayName}
+      return { value: t.id, iconUrl: t.favIconUrl, displayName }
     })
     sendSelectOptions(ctx, options)
   })
@@ -476,11 +480,11 @@ function moveActiveTabWithinWindow(ctx) {
 
 function moveFocusedWindow(ctx) {
   getTabActivityRaw(tabActivity => {
-    chrome.tabs.query({active: true}, tabs => {
+    chrome.tabs.query({ active: true }, tabs => {
       const tabsSorted = tabs.sort((t, t1) => {
         const timestamp = tabActivity[t.id]
         const timestamp1 = tabActivity[t1.id]
-        switch(true) {
+        switch (true) {
           case timestamp === undefined && timestamp1 === undefined: return 0
           case timestamp !== undefined && timestamp1 === undefined: return - 1
           case timestamp === undefined && timestamp1 !== undefined: return 1
@@ -489,7 +493,7 @@ function moveFocusedWindow(ctx) {
       })
       const options = tabsSorted.map(t => {
         const displayName = t.title + " " + getShortURLRep(t.url)
-        return { value: t.id, iconUrl: t.favIconUrl, displayName}
+        return { value: t.id, iconUrl: t.favIconUrl, displayName }
       })
       sendSelectOptions(ctx, options)
     })
@@ -501,5 +505,18 @@ function checkIfTabExists(id, callback) {
     const err = chrome.runtime.lastError
     console.debug(err)
     callback(!(!!err) || err.message !== `No tab with id: ${id}.`)
+  })
+}
+
+function cleanRedundantTabs() {
+  chrome.tabs.query({ currentWindow: true }, tabs => {
+    const irreducible = []
+    for (const thisTab of tabs) {
+      if (irreducible.find(thatTab => thatTab.url === thisTab.url)) {
+        chrome.tabs.remove(thisTab.id)
+        continue
+      }
+      irreducible.push(thisTab)
+    }
   })
 }

@@ -1,7 +1,7 @@
 {
   "name": "WiNager",
   "description": "Window transition manager for Chrome",
-  "version": "0.18.5",
+  "version": "0.19.0",
   "manifest_version": 2,
   "icons": {
     "16": "./get_started16.png",
@@ -9,16 +9,28 @@
     "48": "./get_started48.png",
     "128": "./get_started128.png"
   },
-  "permissions": ["tabs", "storage", "history"],
+  "permissions": [
+    "tabs",
+    "storage",
+    "history"
+  ],
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["/static/js/content.js"],
-      "css": ["/static/css/content.css"]
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "/static/js/content.js"
+      ],
+      "css": [
+        "/static/css/content.css"
+      ]
     }
   ],
   "background": {
-    "scripts": ["/static/js/background.js"],
+    "scripts": [
+      "/static/js/background.js"
+    ],
     "persistent": false
   }
 }
