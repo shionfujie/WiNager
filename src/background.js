@@ -21,6 +21,7 @@ import reloadTabs from "./chrome/tabs/reloadTabs";
 import toggleAdjacentTabSelection from "./chrome/tabs/toggleAdjacentTabSelection"
 import StashEntrySource from "./data/source/StashEntrySource";
 import updateTabs from "./chrome/tabs/updateTabs";
+import queryActiveTab from "./chrome/tabs/queryActiveTab";
 
 const stashEntrySource = StashEntrySource();
 
@@ -213,10 +214,6 @@ function selectAllTabs() {
   function _toggleHighlightedState(tab, callback) {
     chrome.tabs.update(tab.id, { highlighted: !tab.highlighted }, tab => callback && callback(tab))
   }
-}
-
-function queryActiveTab(callback) {
-  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => callback && callback(tab))
 }
 
 function clearSelection() {
