@@ -20,6 +20,7 @@ import restoreTabs from "./chrome/tabs/restoreTabs";
 import reloadTabs from "./chrome/tabs/reloadTabs";
 import toggleAdjacentTabSelection from "./chrome/tabs/toggleAdjacentTabSelection"
 import StashEntrySource from "./data/source/StashEntrySource";
+import updateTabs from "./chrome/tabs/updateTabs";
 
 const stashEntrySource = StashEntrySource();
 
@@ -188,20 +189,6 @@ function reloadAllTabs() {
   chrome.tabs.query({ currentWindow: true }, tabs => {
     reloadTabs(tabs.map(({ id }) => id))
   })
-}
-
-function updateTabs(tabIds, updates, callback) {
-  function _updateTabs(tabIds, updates, updatedTabs, callback) {
-    if (tabIds.length === 0) callback && callback(updatedTabs)
-    else {
-      const [tabId, ...restOfTabIds] = tabIds
-      const [update, ...restOfUpdates] = updates
-      chrome.tabs.update(tabId, update, updatedTab => {
-        _updateTabs(restOfTabIds, restOfUpdates, [...updatedTabs, updatedTab], callback)
-      })
-    }
-  }
-  if (tabIds.length > 0) _updateTabs(tabIds, updates, [], callback)
 }
 
 function selectAllTabs() {
