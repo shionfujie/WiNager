@@ -23,6 +23,64 @@ import StashEntrySource from "./data/source/StashEntrySource";
 import updateTabs from "./chrome/tabs/updateTabs";
 import queryActiveTab from "./chrome/tabs/queryActiveTab";
 
+const actionSpec = {
+  name: "WiNager",
+  actions: {
+    "list stash entries": {
+      displayName: "List Stash Entries",
+      f: requestOpenStashModal
+    },
+    "detach": {
+      displayName: "Detach Tabs",
+      f: detachTabs
+    },
+    "duplicate": {
+      displayName: "Duplicate Tab",
+      f: duplicateCurrentTab
+    },
+    "stash": {
+      displayName: "Stash Tabs",
+      f: stashTabs
+    },
+    "pin": {
+      displayName: "Toggle Pins",
+      f: togglePinnedStates
+    },
+    "reload": {
+      displayName: "Reload All Tabs",
+      f: reloadAllTabs
+    },
+    "select all": {
+      displayName: "Select All Tabs",
+      f: selectAllTabs
+    },
+    "clear selection": {
+      displayName: "Clear Tab Selection",
+      f: clearSelection
+    },
+    "reopen in incognito mode": {
+      displayName: "Reopen in Incognito Mode",
+      f: reopenInIncognitoMode
+    },
+    "go to": {
+      displayName: "Go to ...",
+      f: moveActiveTab
+    },
+    "go to within": {
+      displayName: "Go to Tab within Window",
+      f: moveActiveTabWithinWindow
+    },
+    "go to window": {
+      displayName: "Go to Window",
+      f: moveFocusedWindow
+    },
+    "clear tabs": {
+      displayName: "Clean Redundant Tabs",
+      f: cleanRedundantTabs
+    }
+  }
+};
+
 const stashEntrySource = StashEntrySource();
 
 chrome.runtime.onConnect.addListener(({ name, onMessage }) => {
@@ -108,64 +166,6 @@ chrome.runtime.onMessageExternal.addListener((request, sender, response) => {
       break;
   }
 });
-
-const actionSpec = {
-  name: "WiNager",
-  actions: {
-    "list stash entries": {
-      displayName: "List Stash Entries",
-      f: requestOpenStashModal
-    },
-    "detach": {
-      displayName: "Detach Tabs",
-      f: detachTabs
-    },
-    "duplicate": {
-      displayName: "Duplicate Tab",
-      f: duplicateCurrentTab
-    },
-    "stash": {
-      displayName: "Stash Tabs",
-      f: stashTabs
-    },
-    "pin": {
-      displayName: "Toggle Pins",
-      f: togglePinnedStates
-    },
-    "reload": {
-      displayName: "Reload All Tabs",
-      f: reloadAllTabs
-    },
-    "select all": {
-      displayName: "Select All Tabs",
-      f: selectAllTabs
-    },
-    "clear selection": {
-      displayName: "Clear Tab Selection",
-      f: clearSelection
-    },
-    "reopen in incognito mode": {
-      displayName: "Reopen in Incognito Mode",
-      f: reopenInIncognitoMode
-    },
-    "go to": {
-      displayName: "Go to ...",
-      f: moveActiveTab
-    },
-    "go to within": {
-      displayName: "Go to Tab within Window",
-      f: moveActiveTabWithinWindow
-    },
-    "go to window": {
-      displayName: "Go to Window",
-      f: moveFocusedWindow
-    },
-    "clear tabs": {
-      displayName: "Clean Redundant Tabs",
-      f: cleanRedundantTabs
-    }
-  }
-};
 
 function requestOpenStashModal() {
   console.debug('requestOpenStashModal')
