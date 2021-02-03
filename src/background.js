@@ -20,6 +20,66 @@ import restoreTabs from "./chrome/tabs/restoreTabs";
 import reloadTabs from "./chrome/tabs/reloadTabs";
 import toggleAdjacentTabSelection from "./chrome/tabs/toggleAdjacentTabSelection"
 import StashEntrySource from "./data/source/StashEntrySource";
+import updateTabs from "./chrome/tabs/updateTabs";
+import queryActiveTab from "./chrome/tabs/queryActiveTab";
+
+const actionSpec = {
+  name: "WiNager",
+  actions: {
+    "list stash entries": {
+      displayName: "List Stash Entries",
+      f: requestOpenStashModal
+    },
+    "detach": {
+      displayName: "Detach Tabs",
+      f: detachTabs
+    },
+    "duplicate": {
+      displayName: "Duplicate Tab",
+      f: duplicateCurrentTab
+    },
+    "stash": {
+      displayName: "Stash Tabs",
+      f: stashTabs
+    },
+    "pin": {
+      displayName: "Toggle Pins",
+      f: togglePinnedStates
+    },
+    "reload": {
+      displayName: "Reload All Tabs",
+      f: reloadAllTabs
+    },
+    "select all": {
+      displayName: "Select All Tabs",
+      f: selectAllTabs
+    },
+    "clear selection": {
+      displayName: "Clear Tab Selection",
+      f: clearSelection
+    },
+    "reopen in incognito mode": {
+      displayName: "Reopen in Incognito Mode",
+      f: reopenInIncognitoMode
+    },
+    "go to": {
+      displayName: "Go to ...",
+      f: moveActiveTab
+    },
+    "go to within": {
+      displayName: "Go to Tab within Window",
+      f: moveActiveTabWithinWindow
+    },
+    "go to window": {
+      displayName: "Go to Window",
+      f: moveFocusedWindow
+    },
+    "clear tabs": {
+      displayName: "Clean Redundant Tabs",
+      f: cleanRedundantTabs
+    }
+  }
+};
 
 const stashEntrySource = StashEntrySource();
 
@@ -107,64 +167,6 @@ chrome.runtime.onMessageExternal.addListener((request, sender, response) => {
   }
 });
 
-const actionSpec = {
-  name: "WiNager",
-  actions: {
-    "list stash entries": {
-      displayName: "List Stash Entries",
-      f: requestOpenStashModal
-    },
-    "detach": {
-      displayName: "Detach Tabs",
-      f: detachTabs
-    },
-    "duplicate": {
-      displayName: "Duplicate Tab",
-      f: duplicateCurrentTab
-    },
-    "stash": {
-      displayName: "Stash Tabs",
-      f: stashTabs
-    },
-    "pin": {
-      displayName: "Toggle Pins",
-      f: togglePinnedStates
-    },
-    "reload": {
-      displayName: "Reload All Tabs",
-      f: reloadAllTabs
-    },
-    "select all": {
-      displayName: "Select All Tabs",
-      f: selectAllTabs
-    },
-    "clear selection": {
-      displayName: "Clear Tab Selection",
-      f: clearSelection
-    },
-    "reopen in incognito mode": {
-      displayName: "Reopen in Incognito Mode",
-      f: reopenInIncognitoMode
-    },
-    "go to": {
-      displayName: "Go to ...",
-      f: moveActiveTab
-    },
-    "go to within": {
-      displayName: "Go to Tab within Window",
-      f: moveActiveTabWithinWindow
-    },
-    "go to window": {
-      displayName: "Go to Window",
-      f: moveFocusedWindow
-    },
-    "clear tabs": {
-      displayName: "Clean Redundant Tabs",
-      f: cleanRedundantTabs
-    }
-  }
-};
-
 function requestOpenStashModal() {
   console.debug('requestOpenStashModal')
   chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
@@ -190,20 +192,6 @@ function reloadAllTabs() {
   })
 }
 
-function updateTabs(tabIds, updates, callback) {
-  function _updateTabs(tabIds, updates, updatedTabs, callback) {
-    if (tabIds.length === 0) callback && callback(updatedTabs)
-    else {
-      const [tabId, ...restOfTabIds] = tabIds
-      const [update, ...restOfUpdates] = updates
-      chrome.tabs.update(tabId, update, updatedTab => {
-        _updateTabs(restOfTabIds, restOfUpdates, [...updatedTabs, updatedTab], callback)
-      })
-    }
-  }
-  if (tabIds.length > 0) _updateTabs(tabIds, updates, [], callback)
-}
-
 function selectAllTabs() {
   queryActiveTab(activeTab => {
     chrome.tabs.query({ highlighted: false, currentWindow: true }, tabs => {
@@ -226,10 +214,6 @@ function selectAllTabs() {
   function _toggleHighlightedState(tab, callback) {
     chrome.tabs.update(tab.id, { highlighted: !tab.highlighted }, tab => callback && callback(tab))
   }
-}
-
-function queryActiveTab(callback) {
-  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => callback && callback(tab))
 }
 
 function clearSelection() {
